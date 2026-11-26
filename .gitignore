@@ -1,0 +1,26 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+.vercel
+.DS_Store
+*.log
+
+# Private exports — never commit (LinkedIn data export and its raw files)
+*LinkedInDataExport*
+*LinkedIn*Export*.zip
+linkedin-export/
+Certifications.csv
+Education.csv
+Positions.csv
+Skills.csv
+Profile.csv
+Connections.csv
+messages.csv
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/

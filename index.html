@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>Wandana Herath — Computer Science Undergraduate</title>
+    <meta
+      name="description"
+      content="Portfolio of Wandana Herath, a Computer Science undergraduate at the University of Jaffna, Sri Lanka — software projects, credentials, writing and experience."
+    />
+    <meta name="author" content="Wandana Herath" />
+    <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B1120" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Wandana Herath" />
+    <meta property="og:title" content="Wandana Herath — Computer Science Undergraduate" />
+    <meta
+      property="og:description"
+      content="Software projects built around real workflows — from role-based dashboards to department automation."
+    />
+    <meta name="twitter:card" content="summary" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Wandana Herath",
+        "jobTitle": "Computer Science Undergraduate",
+        "affiliation": { "@type": "CollegeOrUniversity", "name": "University of Jaffna" },
+        "address": { "@type": "PostalAddress", "addressCountry": "LK" },
+        "sameAs": [
+          "https://github.com/Wandana-wdh",
+          "https://www.linkedin.com/in/wandana-herath-88a3ab264",
+          "https://medium.com/@wandanaherath.wdh"
+        ],
+        "knowsAbout": ["Software Development", "React", "Node.js", "MongoDB", "Software Testing"]
+      }
+    </script>
+
+    <!-- Apply the saved / system theme before first paint to avoid a flash. -->
+    <script>
+      (function () {
+        var theme = null;
+        try { theme = localStorage.getItem('theme'); } catch (e) {}
+        var dark = theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>This portfolio requires JavaScript to be enabled.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
