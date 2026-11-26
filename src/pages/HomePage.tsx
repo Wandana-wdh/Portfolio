@@ -7,9 +7,11 @@ import {
   AchievementsSection,
   ArticlesSection,
   ContactSection,
+  EducationSection,
+  EventsSection,
+  ExperienceSection,
   ExpertiseSection,
   FeaturedProjectsSection,
-  JourneySection,
 } from '@/components/sections/home/HomeSections';
 import type { homeLoader, LoaderData } from './loaders';
 
@@ -24,7 +26,9 @@ export default function HomePage() {
       <FeaturedProjectsSection projects={data.projects} />
       <AboutSection profile={profile} />
       <ExpertiseSection groups={data.skills} />
-      <JourneySection entries={data.timeline} volunteering={data.volunteering} />
+      <EducationSection entries={data.timeline} />
+      <ExperienceSection entries={data.volunteering} />
+      <EventsSection entries={data.events} />
       <AchievementsSection items={data.credentials} total={data.totalCredentials} />
       <ArticlesSection articles={data.articles} />
       <ContactSection profile={profile} />

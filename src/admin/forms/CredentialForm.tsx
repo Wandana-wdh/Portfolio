@@ -39,7 +39,7 @@ function Form({ data, update, errors, folder, onUploaded }: FormProps<C>) {
           label="List on the Achievements page"
           checked={data.inAchievements}
           onChange={(inAchievements) => update({ inAchievements })}
-          hint="Turn off for certificates that should only appear where they are attached (e.g. a school certificate in My Journey)."
+          hint="Turn off for certificates that should only appear where they are attached (e.g. a school certificate shown only under Education)."
         />
       </FormSection>
 

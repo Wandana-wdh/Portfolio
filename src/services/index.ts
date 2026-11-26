@@ -2,6 +2,7 @@ export { getRepository, loadSiteContent, invalidateSiteContent, exitPreview } fr
 export type { ContentMode, LoadedContent } from './contentSource';
 export type {
   CredentialView,
+  EventView,
   PortfolioRepository,
   ProjectRef,
   TimelineView,

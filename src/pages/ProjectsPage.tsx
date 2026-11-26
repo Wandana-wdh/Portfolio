@@ -42,7 +42,7 @@ export default function ProjectsPage() {
       <PageHeader
         eyebrow="Projects"
         title="Things I have designed and built"
-        description="Team and coursework projects built around real workflows — from role-based dashboards to department automation."
+        description="Team, coursework and personal projects built around real workflows — from role-based dashboards to department automation."
       >
         {options.length > 2 && <FilterChips label="Filter projects by category" options={options} value={filter} onChange={setFilter} />}
       </PageHeader>

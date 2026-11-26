@@ -28,8 +28,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 const usageLabel: Record<string, string> = {
   projects: 'Project',
-  timeline: 'My Journey',
-  volunteering: 'Volunteering',
+  timeline: 'Education',
+  volunteering: 'Volunteering & Experience',
+  events: 'Event',
   articles: 'Article',
   research: 'Research',
   credentials: 'Certificate',

@@ -20,12 +20,14 @@ export function useEntryEditor<T extends object>(options: {
   initialVisible?: boolean;
   isNew?: boolean;
   onSaved?: () => void;
+  /** Start in the "saved" state (e.g. right after creating the entry). */
+  justSaved?: boolean;
 }) {
   const { collection, id, onSaved } = options;
   const [data, setData] = useState<T>(options.initial);
   const [visible, setVisible] = useState(options.initialVisible ?? true);
   const [errors, setErrors] = useState<Errors>({});
-  const [state, setState] = useState<SaveState>({ kind: 'idle' });
+  const [state, setState] = useState<SaveState>({ kind: options.justSaved ? 'saved' : 'idle' });
   // Bookkeeping that must survive re-renders without causing them.
   const [book] = useState(() => ({
     saved: { data: JSON.stringify(options.initial), visible: options.initialVisible ?? true, files: collectUploads(options.initial) },

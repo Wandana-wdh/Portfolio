@@ -1,24 +1,23 @@
-import { Briefcase, GraduationCap, Laptop, Paperclip, School, type LucideIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { GraduationCap, School, type LucideIcon } from 'lucide-react';
 import type { TimelineKind } from '@/types';
 import type { TimelineView } from '@/services';
 import { timelineKindLabel } from '@/lib/labels';
 import { cn, formatRange } from '@/lib/utils';
 import { TechTag } from '@/components/ui/Badge';
 import { Reveal } from '@/components/ui/Reveal';
+import { CredentialLinks } from './CredentialLinks';
 
 const kindIcon: Record<TimelineKind, LucideIcon> = {
   education: GraduationCap,
   school: School,
-  internship: Briefcase,
-  experience: Laptop,
 };
 
+/** Education entries on a vertical rail. A certificate link appears only when its file is available. */
 export function Timeline({ entries }: { entries: TimelineView[] }) {
   return (
     <ol className="relative">
       {entries.map((entry, i) => {
-        const Icon = kindIcon[entry.kind];
+        const Icon = kindIcon[entry.kind] ?? School;
         const range = formatRange(entry.start, entry.end);
         const last = i === entries.length - 1;
         const meta = [entry.organisation, entry.location].filter(Boolean).join(' · ');
@@ -39,7 +38,7 @@ export function Timeline({ entries }: { entries: TimelineView[] }) {
 
             <Reveal className={cn('pb-6', last && 'pb-0')} delay={Math.min(i * 0.05, 0.2)}>
               <div className="rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong sm:p-6">
-                <span className="font-mono text-[0.7rem] uppercase tracking-widest text-accent">{timelineKindLabel[entry.kind]}</span>
+                <span className="font-mono text-[0.7rem] uppercase tracking-widest text-accent">{timelineKindLabel[entry.kind] ?? 'School'}</span>
                 <h3 className="mt-2 text-lg font-semibold">{entry.title}</h3>
                 {meta && <p className="mt-1 text-sm text-fg-muted">{meta}</p>}
                 {range && <p className="mt-1 font-mono text-xs text-fg-subtle md:hidden">{range}</p>}
@@ -53,35 +52,7 @@ export function Timeline({ entries }: { entries: TimelineView[] }) {
                     ))}
                   </ul>
                 )}
-                {entry.credentials.length > 0 && (
-                  <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2" aria-label="Certificates">
-                    {entry.credentials.map((c) => {
-                      const file = c.document?.href ?? c.image?.src ?? null;
-                      const cls = 'inline-flex items-center gap-1.5 rounded text-sm font-medium text-accent hover:underline';
-                      return (
-                        <li key={c.id}>
-                          {file ? (
-                            <a href={file} target="_blank" rel="noopener noreferrer" className={cls}>
-                              <Paperclip className="size-3.5" aria-hidden />
-                              {c.document?.label ?? c.title}
-                              <span className="sr-only">(opens in a new tab)</span>
-                            </a>
-                          ) : c.inAchievements ? (
-                            <Link to={`/achievements#${c.id}`} className={cls}>
-                              <Paperclip className="size-3.5" aria-hidden />
-                              {c.title}
-                            </Link>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 text-sm text-fg-muted">
-                              <Paperclip className="size-3.5" aria-hidden />
-                              {c.title}
-                            </span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+                <CredentialLinks credentials={entry.credentials} requireFile className="mt-4" />
               </div>
             </Reveal>
           </li>

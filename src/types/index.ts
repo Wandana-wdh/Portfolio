@@ -59,8 +59,8 @@ export interface SocialLink {
 export interface AboutContent {
   /** Main About introduction (one paragraph). */
   intro: string;
+  /** Optional — the row is hidden when empty. */
   academicBackground: string;
-  developmentExperience: string;
   professionalInterests: string[];
   careerAspirations: string;
 }
@@ -159,15 +159,17 @@ export interface Credential extends Listable {
   document: Attachment | null;
   /** Optional details, e.g. the courses inside a specialization. */
   courses: CredentialCourse[];
-  /** List it on the Achievements page. Linked entries (projects, journey) show it either way. */
+  /** List it on the Achievements page. Linked entries (projects, education, experience, events) show it either way. */
   inAchievements: boolean;
   note: string | null;
 }
 
-// ---------------------------------------------------------------- Timeline & volunteering
+// ---------------------------------------------------------------- Education, experience & events
 
-export type TimelineKind = 'education' | 'school' | 'internship' | 'experience';
+/** University or school. (Stored in the "timeline" collection.) */
+export type TimelineKind = 'education' | 'school';
 
+/** An Education entry, e.g. a degree, A/L or O/L. */
 export interface TimelineEntry extends Listable {
   kind: TimelineKind;
   title: string;
@@ -178,11 +180,15 @@ export interface TimelineEntry extends Listable {
   end: string | null;
   description: string | null;
   highlights: string[];
-  /** Ids of credentials (certificates) attached to this milestone. */
+  /** Ids of credentials (certificates or results documents) attached to this entry. */
   credentialIds: string[];
 }
 
+export type ExperienceType = 'volunteering' | 'ambassador' | 'student-role' | 'internship' | 'work';
+
+/** Volunteering & Experience — roles where you contributed. */
 export interface VolunteeringEntry extends Listable {
+  type: ExperienceType;
   role: string;
   organisation: string;
   start: string | null;
@@ -190,7 +196,22 @@ export interface VolunteeringEntry extends Listable {
   /** Only add duties or outcomes supported by your own materials. */
   description: string | null;
   highlights: string[];
+  /** Optional link to evidence (e.g. a post or programme page). */
+  url: string | null;
   /** Ids of credentials attached to this role (e.g. a certificate of appreciation). */
+  credentialIds: string[];
+}
+
+/** Events & Participation — events, meetups and workshops you attended. */
+export interface EventEntry extends Listable {
+  /** Event name. */
+  title: string;
+  organiser: string | null;
+  date: string | null;
+  description: string | null;
+  /** Optional event page. */
+  url: string | null;
+  /** Ids of credentials attached (e.g. a participation certificate). */
   credentialIds: string[];
 }
 
@@ -272,8 +293,12 @@ export interface SiteContent {
   projects: Project[];
   credentials: Credential[];
   articles: Article[];
+  /** Education entries. */
   timeline: TimelineEntry[];
+  /** Volunteering & Experience. */
   volunteering: VolunteeringEntry[];
+  /** Events & Participation. */
+  events: EventEntry[];
   skills: SkillGroup[];
   research: ResearchProject[];
 }

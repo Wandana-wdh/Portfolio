@@ -1,9 +1,9 @@
 import type { TimelineEntry } from '@/types';
 
 /**
- * MY JOURNEY — education and milestones, newest first (array order = display order).
- * `start`/`end` are optional. Attach certificates by listing credential ids in
- * `credentialIds` (use inAchievements: false for school certificates).
+ * EDUCATION — newest first (array order = display order).
+ * `start`/`end` are optional. Attach a certificate or results document by listing
+ * credential ids in `credentialIds` (use inAchievements: false for school certificates).
  */
 export const timeline: TimelineEntry[] = [
   {

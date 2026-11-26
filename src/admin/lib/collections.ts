@@ -2,13 +2,15 @@ import type {
   Article,
   ContentCollection,
   Credential,
+  EventEntry,
   Project,
   ResearchProject,
   SkillGroup,
   TimelineEntry,
   VolunteeringEntry,
 } from '@/types';
-import { credentialTypeLabel, researchStatusLabel, timelineKindLabel } from '@/lib/labels';
+import { credentialTypeLabel, experienceTypeLabel, researchStatusLabel, timelineKindLabel } from '@/lib/labels';
+import { formatDate, formatRange } from '@/lib/utils';
 
 /** Entry data as stored in the database (id/visible live in their own columns). */
 export type EntryData<T> = Omit<T, 'id' | 'visible'>;
@@ -86,14 +88,19 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     }),
   },
   timeline: {
-    label: 'My Journey',
-    singular: 'milestone',
-    description: 'University and school milestones, newest first.',
+    label: 'Education',
+    singular: 'education entry',
+    description: 'University and school entries in the Education section, newest first. The order here is the order on the site.',
     describe: (d) => {
       const t = d as EntryData<TimelineEntry>;
-      return { title: t.title, subtitle: [timelineKindLabel[t.kind], t.organisation].filter(Boolean).join(' · ') };
+      return {
+        title: t.title,
+        subtitle: [timelineKindLabel[t.kind], t.organisation, formatRange(t.start, t.end), t.credentialIds?.length ? 'Certificate attached' : null]
+          .filter(Boolean)
+          .join(' · '),
+      };
     },
-    publicPath: () => '/about',
+    publicPath: () => '/about#education',
     create: (): EntryData<TimelineEntry> => ({
       kind: 'school',
       title: '',
@@ -107,21 +114,44 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     }),
   },
   volunteering: {
-    label: 'Volunteering',
-    singular: 'volunteering role',
-    description: 'Volunteering roles on the About page and homepage.',
+    label: 'Volunteering & Experience',
+    singular: 'role',
+    description: 'Roles where you contributed — volunteering, ambassador and student roles, internships. The order here is the order on the site.',
     describe: (d) => {
       const v = d as EntryData<VolunteeringEntry>;
-      return { title: v.role, subtitle: v.organisation };
+      return {
+        title: v.role,
+        subtitle: [experienceTypeLabel[v.type ?? 'volunteering'], v.organisation, formatRange(v.start, v.end)].filter(Boolean).join(' · '),
+      };
     },
-    publicPath: () => '/about',
+    publicPath: () => '/about#volunteering',
     create: (): EntryData<VolunteeringEntry> => ({
+      type: 'volunteering',
       role: '',
       organisation: '',
       start: null,
       end: null,
       description: null,
       highlights: [],
+      url: null,
+      credentialIds: [],
+    }),
+  },
+  events: {
+    label: 'Events & Participation',
+    singular: 'event',
+    description: 'Events, meetups and workshops you attended. The order here is the order on the site.',
+    describe: (d) => {
+      const e = d as EntryData<EventEntry>;
+      return { title: e.title, subtitle: [e.organiser, formatDate(e.date)].filter(Boolean).join(' · ') };
+    },
+    publicPath: () => '/about#events',
+    create: (): EntryData<EventEntry> => ({
+      title: '',
+      organiser: null,
+      date: null,
+      description: null,
+      url: null,
       credentialIds: [],
     }),
   },
@@ -189,7 +219,7 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
   },
 };
 
-export const collectionOrder: ContentCollection[] = ['projects', 'credentials', 'timeline', 'volunteering', 'articles', 'research', 'skills'];
+export const collectionOrder: ContentCollection[] = ['projects', 'credentials', 'timeline', 'volunteering', 'events', 'articles', 'research', 'skills'];
 
 export const isCollection = (value: string | undefined): value is ContentCollection =>
   Boolean(value && value in collections);

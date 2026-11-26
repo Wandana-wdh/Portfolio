@@ -2,8 +2,7 @@ import type { NavItem, SiteConfig } from '@/types';
 
 export const siteConfig: SiteConfig = {
   name: 'Wandana Herath',
-  // Update to the production domain once deployed on Vercel.
-  url: 'https://wandana-herath.vercel.app',
+  url: 'https://wandana.vercel.app',
   defaultTitle: 'Wandana Herath — Computer Science Undergraduate',
   titleTemplate: '%s · Wandana Herath',
   description:

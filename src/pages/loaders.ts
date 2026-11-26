@@ -21,11 +21,12 @@ export async function rootLoader() {
 
 export async function homeLoader() {
   const portfolio = await getRepository();
-  const [projects, skills, timeline, volunteering, credentials, articles] = await Promise.all([
+  const [projects, skills, timeline, volunteering, events, credentials, articles] = await Promise.all([
     portfolio.listProjects(),
     portfolio.listSkillGroups(),
     portfolio.listTimeline(),
     portfolio.listVolunteering(),
+    portfolio.listEvents(),
     portfolio.listCredentials(),
     portfolio.listArticles(),
   ]);
@@ -34,6 +35,7 @@ export async function homeLoader() {
     skills,
     timeline,
     volunteering,
+    events,
     credentials: credentials.slice(0, HOME_PREVIEW.credentials),
     totalCredentials: credentials.length,
     articles: articles.slice(0, HOME_PREVIEW.articles),
@@ -42,12 +44,13 @@ export async function homeLoader() {
 
 export async function aboutLoader() {
   const portfolio = await getRepository();
-  const [skills, timeline, volunteering] = await Promise.all([
+  const [skills, timeline, volunteering, events] = await Promise.all([
     portfolio.listSkillGroups(),
     portfolio.listTimeline(),
     portfolio.listVolunteering(),
+    portfolio.listEvents(),
   ]);
-  return { skills, timeline, volunteering };
+  return { skills, timeline, volunteering, events };
 }
 
 export async function researchListLoader() {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
-import { Link, useLoaderData, useNavigate, type LoaderFunctionArgs } from 'react-router-dom';
+import { Link, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from 'react-router-dom';
 import type { ContentCollection, Credential } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { useAdmin } from '../AdminContext';
@@ -76,6 +76,7 @@ function Editor({ collection, row, takenIds, takenSlugs, credentials }: EditorLo
   const config = collections[collection as ContentCollection];
   const form = forms[collection as ContentCollection];
   const navigate = useNavigate();
+  const location = useLocation();
   const { refreshStatus } = useAdmin();
   const isNew = !row;
   const [draftKey] = useState(() => (isNew ? `new-${crypto.randomUUID().slice(0, 8)}` : row.id));
@@ -84,15 +85,18 @@ function Editor({ collection, row, takenIds, takenSlugs, credentials }: EditorLo
   const editor = useEntryEditor<Record<string, unknown>>({
     collection,
     id: id || draftKey,
-    initial: (row?.data ?? config.create()) as Record<string, unknown>,
+    // Defaults first, so entries saved before a field existed still get it.
+    initial: { ...(config.create() as Record<string, unknown>), ...(row?.data ?? {}) },
     initialVisible: row?.visible ?? true,
     isNew,
     onSaved: refreshStatus,
+    // Arriving from the first save of a new entry: keep showing "Saved".
+    justSaved: Boolean((location.state as { saved?: boolean } | null)?.saved),
   });
 
   // After the first save of a new entry, move to its permanent URL.
   useEffect(() => {
-    if (isNew && editor.state.kind === 'saved' && id) navigate(`/admin/${collection}/${id}`, { replace: true });
+    if (isNew && editor.state.kind === 'saved' && id) navigate(`/admin/${collection}/${id}`, { replace: true, state: { saved: true } });
   }, [isNew, editor.state.kind, id, collection, navigate]);
 
   const title = config.describe(editor.data as never).title;

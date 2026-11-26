@@ -6,6 +6,7 @@ import { AboutDetails } from '@/components/sections/AboutDetails';
 import { SkillGrid } from '@/components/sections/SkillGrid';
 import { Timeline } from '@/components/sections/Timeline';
 import { VolunteeringList } from '@/components/sections/Volunteering';
+import { EventsList } from '@/components/sections/Events';
 import { Button } from '@/components/ui/Button';
 import { Section } from '@/components/ui/Container';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -16,10 +17,10 @@ import type { aboutLoader, LoaderData } from './loaders';
 
 export default function AboutPage() {
   const profile = useProfile();
-  const { skills, timeline, volunteering } = useLoaderData() as LoaderData<typeof aboutLoader>;
+  const { skills, timeline, volunteering, events } = useLoaderData() as LoaderData<typeof aboutLoader>;
   useDocumentMeta({
     title: 'About',
-    description: `About ${profile.name} — background, software development experience, skills, education and volunteering.`,
+    description: `About ${profile.name} — background, skills, education, volunteering and experience, and events.`,
     type: 'profile',
   });
 
@@ -73,9 +74,14 @@ export default function AboutPage() {
       </Section>
 
       {timeline.length > 0 && (
-        <Section labelledBy="timeline-title">
+        <Section id="education" labelledBy="education-title">
           <div className="mx-auto max-w-4xl">
-            <SectionHeading id="timeline-title" eyebrow="My Journey" title="Education" />
+            <SectionHeading
+              id="education-title"
+              eyebrow="Education"
+              title="From school to university"
+              description="University studies and school examinations, newest first."
+            />
             <Timeline entries={timeline} />
           </div>
         </Section>
@@ -86,11 +92,29 @@ export default function AboutPage() {
           <div className="mx-auto max-w-4xl">
             <SectionHeading
               id="volunteering-title"
-              eyebrow="Volunteering"
-              title="Volunteering"
-              description="Contributions beyond coursework."
+              eyebrow="Experience"
+              title="Volunteering & Experience"
+              description="Roles where I’ve contributed beyond coursework."
             />
             <VolunteeringList entries={volunteering} />
+          </div>
+        </Section>
+      )}
+
+      {events.length > 0 && (
+        <Section
+          id="events"
+          labelledBy="events-title"
+          className={volunteering.length > 0 ? 'border-t border-line' : 'border-t border-line bg-surface'}
+        >
+          <div className="mx-auto max-w-4xl">
+            <SectionHeading
+              id="events-title"
+              eyebrow="Participation"
+              title="Events & Participation"
+              description="Events, meetups and workshops I’ve attended."
+            />
+            <EventsList entries={events} />
           </div>
         </Section>
       )}

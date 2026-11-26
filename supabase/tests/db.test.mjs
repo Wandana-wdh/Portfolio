@@ -69,13 +69,25 @@ test('import: drafts and the first published version preserve order, URLs and vi
     'civil-engineering-management-system',
     'hospital-e-channeling-system',
     'edge-azure-iot-department-automation',
+    'personal-portfolio-website',
   ]);
+  assert.equal(c.projects[3].liveUrl, 'https://wandana.vercel.app');
+  assert.deepEqual(c.projects[3].repositories, []);
   assert.equal(c.credentials.length, 9, 'hidden V1 is not published');
   assert.equal(c.credentials[0].id, 'cems-confirmation-letter');
   assert.equal(c.credentials[8].id, 'joomla-workshop');
   assert.ok(!c.credentials.some((x) => x.id === 'google-ai-essentials-v1'));
   assert.ok(c.credentials.every((x) => x.visible === true));
   assert.deepEqual(c.volunteering[0].credentialIds, ['ieee-appreciation']);
+  assert.equal(c.volunteering[0].type, 'volunteering');
+  assert.deepEqual(c.timeline.map((t) => t.id), ['uoj-computer-science', 'gce-advanced-level', 'gce-ordinary-level', 'grade-5-scholarship']);
+  assert.deepEqual(c.events.map((e) => [e.id, e.credentialIds]), [
+    ['aws-career-meetup', ['aws-meetup-level-up-cloud']],
+    ['joomla-cms-workshop', ['joomla-workshop']],
+  ]);
+  assert.equal(c.profile.about.developmentExperience, undefined);
+  const allSkills = c.skills.flatMap((g) => g.skills.map((x) => x.toLowerCase()));
+  assert.equal(new Set(allSkills).size, allSkills.length, 'no duplicate skills');
   assert.equal(c.articles[0].url, 'https://medium.com/@wandanaherath.wdh/trust-without-trusting-f8ef1e744176');
   const drafts = await owner((tx) => rows(tx, `select id, visible from public.admin_entries() where collection = 'credentials'`));
   assert.equal(drafts.length, 10, 'owner sees the hidden draft too');
@@ -172,17 +184,49 @@ test('owner: one certificate in several places, usages, and delete removes refer
   await owner(async (tx) => {
     await tx.query(`select public.save_entry('timeline', 'uoj-computer-science', data || '{"credentialIds":["cems-confirmation-letter"]}'::jsonb)
                     from public.content_entries where collection = 'timeline' and id = 'uoj-computer-science'`);
-    const usages = await rows(tx, `select collection, id from public.credential_usages('cems-confirmation-letter')`);
-    assert.deepEqual(usages.map((u) => `${u.collection}/${u.id}`).sort(), ['projects/cems', 'timeline/uoj-computer-science']);
+    await tx.query(`select public.save_entry('events', 'aws-career-meetup', data || '{"credentialIds":["aws-meetup-level-up-cloud","cems-confirmation-letter"]}'::jsonb)
+                    from public.content_entries where collection = 'events' and id = 'aws-career-meetup'`);
+    const usages = await rows(tx, `select collection, id, title from public.credential_usages('cems-confirmation-letter')`);
+    assert.deepEqual(usages.map((u) => `${u.collection}/${u.id}`).sort(), ['events/aws-career-meetup', 'projects/cems', 'timeline/uoj-computer-science']);
+    assert.equal(usages.find((u) => u.collection === 'events').title, 'Level Up on the Cloud: Building Your AWS Career');
 
     const removed = await one(tx, `select public.delete_entry('credentials', 'cems-confirmation-letter') as d`);
     assert.equal(removed.d.title, 'CEMS — Project Confirmation Letter', 'returns the deleted data (for file clean-up)');
     const left = await rows(tx, `select id from public.content_entries where data -> 'credentialIds' ? 'cems-confirmation-letter'`);
-    assert.equal(left.length, 0, 'references removed from project and timeline');
+    assert.equal(left.length, 0, 'references removed from project, education and event');
+    assert.deepEqual(
+      (await one(tx, `select data -> 'credentialIds' as ids from public.content_entries where collection = 'events' and id = 'aws-career-meetup'`)).ids,
+      ['aws-meetup-level-up-cloud'],
+      'other links on the event are kept',
+    );
     const snap = await one(tx, `select public.draft_snapshot() as s`);
     assert.deepEqual(snap.s.projects.find((p) => p.id === 'cems').credentialIds, []);
     throw new Error('rollback');
   }).catch((e) => assert.equal(e.message, 'rollback'));
+});
+
+test('owner: events and experience can be added, reordered, hidden and deleted', async () => {
+  await owner(async (tx) => {
+    const saved = await one(tx, `select * from public.save_entry('events', 'cloud-day', $1::jsonb)`, [
+      JSON.stringify({ title: 'Cloud Day', organiser: null, date: '2026-05', description: null, url: 'https://example.org', credentialIds: [] }),
+    ]);
+    assert.equal(saved.sort_order, 2, 'appended after the two imported events');
+    await tx.query(`select public.reorder_entries('events', $1)`, [['cloud-day', 'aws-career-meetup', 'joomla-cms-workshop']]);
+    await tx.query(`select public.set_entry_visibility('events', 'joomla-cms-workshop', false)`);
+    let snap = (await one(tx, 'select public.draft_snapshot() as s')).s;
+    assert.deepEqual(snap.events.map((e) => e.id), ['cloud-day', 'aws-career-meetup'], 'order kept, hidden left out');
+    await tx.query(`select public.delete_entry('events', 'cloud-day')`);
+    await rejects(failing(tx, `select public.save_entry('events', 'untitled', '{"title":""}'::jsonb)`), /has_title/, 'events need a name');
+
+    await tx.query(`select public.save_entry('volunteering', 'campus-ambassador', $1::jsonb)`, [
+      JSON.stringify({ type: 'ambassador', role: 'Campus Ambassador', organisation: 'Example', start: null, end: null, description: null, highlights: [], url: null, credentialIds: [] }),
+    ]);
+    await rejects(failing(tx, `select public.save_entry('volunteering', 'no-role', '{"role":" "}'::jsonb)`), /volunteering_has_role/);
+    snap = (await one(tx, 'select public.draft_snapshot() as s')).s;
+    assert.deepEqual(snap.volunteering.map((v) => v.id), ['ieee-sb-finance-committee', 'campus-ambassador']);
+    throw new Error('rollback');
+  }).catch((e) => assert.equal(e.message, 'rollback'));
+  await rejects(stranger((tx) => rows(tx, `select public.save_entry('events', 'x', '{"title":"x"}'::jsonb)`)), /42501|owner/);
 });
 
 // ------------------------------------------------------------------ publishing

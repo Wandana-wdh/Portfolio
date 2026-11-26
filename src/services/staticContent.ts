@@ -1,6 +1,7 @@
 import {
   articles,
   credentials,
+  events,
   profile,
   projects,
   researchProjects,
@@ -22,6 +23,7 @@ export function staticSiteContent(): SiteContent {
     articles,
     timeline,
     volunteering,
+    events,
     skills: skillGroups,
     research: researchProjects,
   });

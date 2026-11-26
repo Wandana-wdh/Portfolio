@@ -13,29 +13,42 @@ function Row({ label, children, index }: { label: string; children: ReactNode; i
   );
 }
 
-/** Editorial definition-style breakdown of the "About" content. */
+/**
+ * Editorial definition-style breakdown of the "About" content. Rows with no
+ * content are left out, so the panel is only as tall as what it shows.
+ */
 export function AboutDetails({ about }: { about: AboutContent }) {
-  return (
-    <div className="border-b border-line">
-      <Row label="Academic background" index={0}>
-        <p>{about.academicBackground}</p>
-      </Row>
-      <Row label="Software development" index={1}>
-        <p>{about.developmentExperience}</p>
-      </Row>
-      <Row label="Professional interests" index={2}>
+  const rows: Array<{ label: string; content: ReactNode }> = [];
+  const academic = about.academicBackground?.trim();
+  const interests = (about.professionalInterests ?? []).filter((i) => i.trim());
+  const aspirations = about.careerAspirations?.trim();
+
+  if (academic) rows.push({ label: 'Academic background', content: <p>{academic}</p> });
+  if (interests.length > 0) {
+    rows.push({
+      label: 'Professional interests',
+      content: (
         <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
-          {about.professionalInterests.map((i) => (
+          {interests.map((i) => (
             <li key={i} className="flex items-center gap-2.5 text-fg">
               <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-accent" />
               {i}
             </li>
           ))}
         </ul>
-      </Row>
-      <Row label="Career aspirations" index={3}>
-        <p>{about.careerAspirations}</p>
-      </Row>
+      ),
+    });
+  }
+  if (aspirations) rows.push({ label: 'Career aspirations', content: <p>{aspirations}</p> });
+
+  if (rows.length === 0) return null;
+  return (
+    <div className="border-b border-line">
+      {rows.map((row, i) => (
+        <Row key={row.label} label={row.label} index={i}>
+          {row.content}
+        </Row>
+      ))}
     </div>
   );
 }

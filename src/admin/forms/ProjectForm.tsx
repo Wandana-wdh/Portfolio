@@ -109,7 +109,7 @@ function Form({ data, update, errors, folder, onUploaded, credentials, isNew }: 
       </FormSection>
 
       <FormSection title="Certificates" description="For example the CEMS confirmation letter. The same certificate can also appear on Achievements and elsewhere.">
-        <CredentialPicker label="Attached certificates" value={data.credentialIds} onChange={(credentialIds) => update({ credentialIds })} credentials={credentials} />
+        <CredentialPicker label="Attached certificates" value={data.credentialIds} onChange={(credentialIds) => update({ credentialIds })} credentials={credentials} create={{ type: 'certificate', inAchievements: true }} />
       </FormSection>
     </>
   );

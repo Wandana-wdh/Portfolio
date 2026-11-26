@@ -19,7 +19,7 @@ export const skillGroups: SkillGroup[] = [
     title: 'Frontend Development',
     description: 'Interfaces built around how different users work.',
     icon: 'layout',
-    skills: ['React', 'Protected Routes', 'Role-Based Dashboards', 'HTML', 'CSS'],
+    skills: ['React', 'Protected Routes', 'Role-Based Dashboards', 'HTML', 'CSS', 'TypeScript', 'Tailwind CSS', 'Responsive Web Design'],
     emphasised: true,
   },
   {
@@ -28,7 +28,7 @@ export const skillGroups: SkillGroup[] = [
     title: 'Backend Development',
     description: 'APIs and server-side application logic.',
     icon: 'server',
-    skills: ['Node.js', 'Express', 'REST APIs'],
+    skills: ['Node.js', 'Express', 'REST APIs', 'Authentication (Supabase Auth)', 'File Storage (Supabase Storage)'],
   },
   {
     id: 'databases',
@@ -36,7 +36,7 @@ export const skillGroups: SkillGroup[] = [
     title: 'Databases',
     description: 'Document and relational data.',
     icon: 'database',
-    skills: ['MongoDB', 'MySQL'],
+    skills: ['MongoDB', 'MySQL', 'PostgreSQL', 'Supabase'],
   },
   {
     id: 'cloud',
@@ -60,6 +60,6 @@ export const skillGroups: SkillGroup[] = [
     title: 'Development Tools',
     description: 'Everyday tooling for collaboration and delivery.',
     icon: 'wrench',
-    skills: ['Git', 'GitHub', 'VS Code', 'Postman', 'Linux'],
+    skills: ['Git', 'GitHub', 'VS Code', 'Postman', 'Linux', 'Vite', 'Vercel Deployment'],
   },
 ];

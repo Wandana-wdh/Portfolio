@@ -1,4 +1,4 @@
-import type { CredentialType, ResearchStatus, TimelineKind } from '@/types';
+import type { CredentialType, ExperienceType, ResearchStatus, TimelineKind } from '@/types';
 
 export const researchStatusLabel: Record<ResearchStatus, string> = {
   'early-stage': 'Early-stage research',
@@ -43,8 +43,14 @@ export const credentialGroupLabel: Record<CredentialGroup, string> = {
 export const timelineKindLabel: Record<TimelineKind, string> = {
   education: 'University',
   school: 'School',
+};
+
+export const experienceTypeLabel: Record<ExperienceType, string> = {
+  volunteering: 'Volunteering',
+  ambassador: 'Ambassador',
+  'student-role': 'Student role',
   internship: 'Internship',
-  experience: 'Experience',
+  work: 'Work experience',
 };
 
 /** Early-stage and ongoing research show a "live" status dot. */

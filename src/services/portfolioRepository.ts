@@ -1,6 +1,7 @@
 import type {
   Article,
   Credential,
+  EventEntry,
   Profile,
   Project,
   ResearchProject,
@@ -21,13 +22,18 @@ export interface CredentialView extends Credential {
   relatedProjects: ProjectRef[];
 }
 
-/** A timeline entry with its visible attached credentials. */
+/** An Education entry with its visible attached credentials. */
 export interface TimelineView extends TimelineEntry {
   credentials: Credential[];
 }
 
-/** A volunteering entry with its visible attached credentials. */
+/** A Volunteering & Experience entry with its visible attached credentials. */
 export interface VolunteeringView extends VolunteeringEntry {
+  credentials: Credential[];
+}
+
+/** An Events & Participation entry with its visible attached credentials. */
+export interface EventView extends EventEntry {
   credentials: Credential[];
 }
 
@@ -43,8 +49,12 @@ export interface PortfolioRepository {
   listCredentials(): Promise<CredentialView[]>;
   /** Visible credentials for the given ids, in the given order; unknown/hidden ids are skipped. */
   getCredentials(ids: string[]): Promise<Credential[]>;
+  /** Education entries. */
   listTimeline(): Promise<TimelineView[]>;
+  /** Volunteering & Experience. */
   listVolunteering(): Promise<VolunteeringView[]>;
+  /** Events & Participation. */
+  listEvents(): Promise<EventView[]>;
   listSkillGroups(): Promise<SkillGroup[]>;
   listResearch(): Promise<ResearchProject[]>;
   getResearch(slug: string): Promise<ResearchProject | null>;

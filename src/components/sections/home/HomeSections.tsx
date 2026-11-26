@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Article, Profile, Project, SkillGroup } from '@/types';
-import type { CredentialView, TimelineView, VolunteeringView } from '@/services';
+import type { CredentialView, EventView, TimelineView, VolunteeringView } from '@/services';
 import { siteConfig } from '@/data/site';
 import { cardGrid } from '@/lib/layout';
 import { ArticleCard } from '@/components/cards/ArticleCard';
@@ -16,6 +16,7 @@ import { AboutDetails } from '@/components/sections/AboutDetails';
 import { SkillGrid } from '@/components/sections/SkillGrid';
 import { Timeline } from '@/components/sections/Timeline';
 import { VolunteeringList } from '@/components/sections/Volunteering';
+import { EventsList } from '@/components/sections/Events';
 import { MediumIcon } from '@/components/ui/SocialIcon';
 
 export function FeaturedProjectsSection({ projects }: { projects: Project[] }) {
@@ -79,26 +80,56 @@ export function ExpertiseSection({ groups }: { groups: SkillGroup[] }) {
   );
 }
 
-export function JourneySection({ entries, volunteering }: { entries: TimelineView[]; volunteering: VolunteeringView[] }) {
-  if (entries.length === 0 && volunteering.length === 0) return null;
+export function EducationSection({ entries }: { entries: TimelineView[] }) {
+  if (entries.length === 0) return null;
   return (
-    <Section id="journey" labelledBy="journey-title" className="border-y border-line bg-surface">
-      <SectionHeading
-        id="journey-title"
-        index="04"
-        eyebrow="My Journey"
-        title="Education and volunteering"
-        description="From school milestones to university, and contributions beyond coursework."
-        action={{ label: 'Full background', to: '/about' }}
-      />
-      <div className="grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-14">
-        {entries.length > 0 && <Timeline entries={entries} />}
-        {volunteering.length > 0 && (
-          <div>
-            <h3 className="mb-5 font-mono text-xs uppercase tracking-[0.18em] text-fg-subtle">Volunteering</h3>
-            <VolunteeringList entries={volunteering} />
-          </div>
-        )}
+    <Section id="education" labelledBy="education-title" className="border-y border-line bg-surface">
+      <div className="mx-auto max-w-4xl">
+        <SectionHeading
+          id="education-title"
+          index="04"
+          eyebrow="Education"
+          title="From school to university"
+          description="University studies and school examinations, newest first."
+          action={{ label: 'Full background', to: '/about' }}
+        />
+        <Timeline entries={entries} />
+      </div>
+    </Section>
+  );
+}
+
+export function ExperienceSection({ entries }: { entries: VolunteeringView[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <Section id="experience" labelledBy="experience-title">
+      <div className="mx-auto max-w-4xl">
+        <SectionHeading
+          id="experience-title"
+          index="05"
+          eyebrow="Experience"
+          title="Volunteering & Experience"
+          description="Roles where I’ve contributed beyond coursework."
+        />
+        <VolunteeringList entries={entries} />
+      </div>
+    </Section>
+  );
+}
+
+export function EventsSection({ entries }: { entries: EventView[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <Section id="events" labelledBy="events-title" className="border-y border-line bg-surface">
+      <div className="mx-auto max-w-4xl">
+        <SectionHeading
+          id="events-title"
+          index="06"
+          eyebrow="Participation"
+          title="Events & Participation"
+          description="Events, meetups and workshops I’ve attended."
+        />
+        <EventsList entries={entries} />
       </div>
     </Section>
   );
@@ -110,7 +141,7 @@ export function AchievementsSection({ items, total }: { items: CredentialView[];
     <Section id="achievements" labelledBy="achievements-title">
       <SectionHeading
         id="achievements-title"
-        index="05"
+        index="07"
         eyebrow="Achievements & Certifications"
         title="Credentials and recognition"
         description="Project confirmation, skills credentials and badges — with links to verify each one where available."
@@ -136,7 +167,7 @@ export function ArticlesSection({ articles }: { articles: Article[] }) {
     <Section id="articles" labelledBy="articles-title" className="border-y border-line bg-surface">
       <SectionHeading
         id="articles-title"
-        index="06"
+        index="08"
         eyebrow="Articles"
         title="Writing"
         description="Sharing what I’m learning — across software, security and the ideas behind them."
@@ -178,7 +209,7 @@ export function ContactSection({ profile }: { profile: Profile }) {
         <div>
           <SectionHeading
             id="contact-title"
-            index="07"
+            index="09"
             eyebrow="Contact"
             title="Let’s work together"
             description="Open to software and IT internships, project collaborations and conversations about building software."

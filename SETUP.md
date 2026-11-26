@@ -14,12 +14,15 @@ It takes about 20 minutes. You need a free [Supabase](https://supabase.com) acco
 
 ## 2. Create the database and storage
 
-In the project, open **SQL Editor → New query**, then run these two files from this repository **in order** (paste the whole file, click **Run**):
+In the project, open **SQL Editor → New query**, then run these files from this repository **in order** (paste the whole file, click **Run**):
 
 1. `supabase/migrations/20261126000001_cms_schema.sql` — tables, Row Level Security, storage buckets and publishing functions.
-2. `supabase/migrations/20261126000002_import_content.sql` — imports your current portfolio (same URLs, project order, certificate order and visibility) and publishes it as version 1.
+2. `supabase/migrations/20261126000002_import_content.sql` — imports the portfolio (same URLs, project order, certificate order and visibility) and publishes it as version 1. On a project that already has content it does nothing.
+3. `supabase/migrations/20261127000003_sections_and_portfolio.sql` — Education, Volunteering & Experience and Events & Participation (on a new project it only updates the schema, because step 2 already imported everything).
 
 Each should finish with “Success. No rows returned”. Running them again is safe.
+
+> **Already set up?** Don’t start again — see [Updating a live site](#updating-a-live-site).
 
 > Prefer the command line? `npx supabase login`, `npx supabase init` (keeps the existing `supabase/migrations`), `npx supabase link --project-ref <ref>`, then `npx supabase db push`.
 
@@ -76,7 +79,7 @@ Expected result: **All checks passed.** `.env.local` is ignored by git — never
 1. Vercel → your project → **Settings → Environment Variables**.
 2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (Production and Preview).
 3. **Deployments → … → Redeploy** (this one redeploy is needed because Vite reads the variables at build time).
-4. In Supabase, **Authentication → URL Configuration → Site URL**: set your Vercel address (e.g. `https://wandana-herath.vercel.app`).
+4. In Supabase, **Authentication → URL Configuration → Site URL**: set your Vercel address (`https://wandana.vercel.app`).
 
 ## 8. Your first edit
 
@@ -87,12 +90,40 @@ Expected result: **All checks passed.** `.env.local` is ignored by git — never
 
 ---
 
+## Updating a live site
+
+Some code updates add a new file to `supabase/migrations/`. Run **only the new file**, once, in **SQL Editor → New query → Run**. These update files only add what is missing, and they never overwrite your edits, uploads, visibility settings or certificate links. Don’t re-run the earlier files: there’s no need, and the import file skips itself on a site that already has content.
+
+### Update 3 (27 Nov 2026): `20261127000003_sections_and_portfolio.sql`
+
+Apply it **before or right after** pushing this code to GitHub, and publish only when both are done:
+
+1. In Supabase, open **SQL Editor → New query**, paste the whole of `supabase/migrations/20261127000003_sections_and_portfolio.sql`, and click **Run**. It should finish with “Success”. The messages show *Content update 2026-11-27-sections applied to your drafts*.
+2. Push the code to GitHub and wait for the Vercel deployment to finish.
+3. Open `/admin`. The top bar shows *Unpublished changes*. Click **Preview**, check the homepage and About page, then **Publish**.
+
+What it does — **only to your drafts**, so the public site doesn’t change until you publish:
+
+- Allows the new **Events & Participation** list and adds the AWS career meetup and the Joomla CMS workshop to it, linked to their existing certificates. The AWS meetup’s organiser is left blank, because it isn’t confirmed.
+- Gives your IEEE role a type (*Volunteering*) in **Volunteering & Experience**. Its dates and Certificate of Appreciation link are kept.
+- Moves any internship or experience entries out of Education into Volunteering & Experience. Normally there are none.
+- Appends **Personal Portfolio Website** after your existing projects. CEMS stays first and your order is kept.
+- Adds the new skills to your existing skill groups, skipping any skill you already list and any group you’ve deleted.
+- Removes the old “Software development” text from your About data. Your bio, interests, aspirations and academic background stay exactly as they are.
+
+Running it a second time changes nothing (it records itself in `public.content_patches`). If you edit or delete any of the added entries afterwards, running it again won’t bring them back.
+
+> Using the Supabase CLI instead? `npx supabase db push` also works. If the CLI wasn’t used for the earlier files, it will run them again too, which is harmless: the schema file can be repeated and the import skips itself.
+
+---
+
 ## How it works (in short)
 
 - **Drafts vs. published.** Every save is a private draft. **Publish** copies the files the drafts use into the public `site` bucket and stores a snapshot. Visitors only ever read the latest snapshot.
 - **Hide vs. delete.** *Hide* keeps the entry (show it again any time); after you publish, it and its files are no longer public. *Delete* is permanent and first shows everywhere the entry is used.
 - **Reordering.** The order in each list is the order on the site — use the ↑ ↓ buttons, then publish.
-- **One certificate, many places.** Attach a certificate to projects, My Journey or Volunteering from those editors. It is one record, so editing or replacing it updates every place. Turn off *List on the Achievements page* for certificates that should only appear where they are attached (e.g. school certificates).
+- **One certificate, many places.** Attach a certificate to projects, Education, Volunteering & Experience or Events & Participation from those editors. Tick an existing one, or use **New certificate with file** to upload a PDF or image and attach it in one step. It is one record, so editing or replacing it in **Certificates** updates every place. Turn off *List on the Achievements page* for certificates that should only appear where they are attached (e.g. school certificates under Education).
+- **Certificate buttons.** Education shows a *View certificate* button only when the attached certificate has a file. Experience and events link to the file, or to the certificate on the Achievements page when there is no file.
 - **Replacing a file** uploads it to a new location first; your current file stays in place if the upload fails, and is removed only after you save.
 - **Uploads**: PDF, JPG, PNG, WebP, GIF or AVIF, up to 10 MB each. Remove personal details (index/ID numbers, addresses) from certificates before uploading.
 
@@ -113,10 +144,12 @@ Expected result: **All checks passed.** `.env.local` is ignored by git — never
 | The public site says it couldn’t load content | Free Supabase projects pause after a week without activity — open the dashboard and **Restore** the project. |
 | Publishing reports files that couldn’t be copied | Retry **Publish**; nothing changes on the public site until it succeeds. |
 | Changes don’t appear on the site | Did you **Publish**? Saving alone only updates drafts (check the status in the top bar). |
+| “This section needs the latest database update” | Run the newest file in `supabase/migrations` — see [Updating a live site](#updating-a-live-site). |
 
 ## Tests in this repository
 
 ```bash
-npm run test:db          # runs the real migrations in an in-memory Postgres and tests RLS, publishing and deletion
+npm run test:db          # runs the real migrations in an in-memory Postgres: RLS, publishing, deletion, and
+                         # upgrading a live-like site with update 3 (edits kept, safe to re-run)
 npm run verify:supabase  # read-only checks against your real project (step 6)
 ```

@@ -38,6 +38,9 @@ function friendly(error: PostgrestError | { message: string; code?: string }): s
     return 'That URL (slug) is already used by another entry. Choose a different one.';
   }
   if (code === '23514' || /violates check constraint/i.test(message)) {
+    if (/content_entries_collection_check/.test(message)) {
+      return 'This section needs the latest database update. In Supabase, run the newest file in supabase/migrations (see SETUP.md → “Updating a live site”), then try again.';
+    }
     if (/slug_format/.test(message)) return 'The URL (slug) may only use lowercase letters, numbers and single hyphens.';
     if (/has_title|volunteering_has_role/.test(message)) return 'A title is required.';
     return 'Some information is missing or invalid. Check the highlighted fields.';

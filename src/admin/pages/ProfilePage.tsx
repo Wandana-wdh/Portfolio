@@ -41,6 +41,9 @@ function validate(p: Profile) {
 }
 
 function prepare(p: Profile): Profile {
+  // The old "Software development" block is no longer shown; drop it from saved data.
+  const { developmentExperience: _removed, ...aboutFields } = p.about as Profile['about'] & { developmentExperience?: string };
+  void _removed;
   return {
     ...p,
     name: p.name.trim(),
@@ -53,10 +56,9 @@ function prepare(p: Profile): Profile {
     socials: p.socials.map((s) => ({ ...s, label: s.label.trim(), href: s.href.trim(), handle: s.handle.trim() })),
     portrait: p.portrait ? { ...p.portrait, alt: p.portrait.alt.trim() } : null,
     about: {
-      ...p.about,
+      ...aboutFields,
       intro: p.about.intro.trim(),
-      academicBackground: p.about.academicBackground.trim(),
-      developmentExperience: p.about.developmentExperience.trim(),
+      academicBackground: (p.about.academicBackground ?? '').trim(),
       careerAspirations: p.about.careerAspirations.trim(),
       professionalInterests: cleanList(p.about.professionalInterests),
     },
@@ -116,8 +118,13 @@ export function Component() {
 
         <FormSection title="About">
           <TextAreaField label="About introduction" rows={6} value={data.about.intro} onChange={(intro) => about({ intro })} />
-          <TextAreaField label="Academic background" rows={3} value={data.about.academicBackground} onChange={(academicBackground) => about({ academicBackground })} />
-          <TextAreaField label="Software development" rows={3} value={data.about.developmentExperience} onChange={(developmentExperience) => about({ developmentExperience })} />
+          <TextAreaField
+            label="Academic background (optional)"
+            rows={3}
+            value={data.about.academicBackground}
+            onChange={(academicBackground) => about({ academicBackground })}
+            hint="Leave empty to hide this row in the About panel."
+          />
           <StringListField
             label="Professional interests"
             values={data.about.professionalInterests}

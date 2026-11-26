@@ -5,5 +5,6 @@ export { credentials } from './credentials';
 export { articles } from './articles';
 export { timeline } from './timeline';
 export { volunteering } from './volunteering';
+export { events } from './events';
 export { skillGroups } from './skills';
 export { researchProjects } from './research';

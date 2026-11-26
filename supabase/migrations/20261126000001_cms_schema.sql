@@ -54,7 +54,7 @@ $$;
 
 create table if not exists public.content_entries (
   collection text not null check (
-    collection in ('profile', 'projects', 'credentials', 'articles', 'timeline', 'volunteering', 'skills', 'research')
+    collection in ('profile', 'projects', 'credentials', 'articles', 'timeline', 'volunteering', 'events', 'skills', 'research')
   ),
   id text not null check (id ~ '^[a-z0-9][a-z0-9-]{0,79}$'),
   sort_order integer not null default 0,
@@ -155,6 +155,7 @@ as $$
     'articles', coalesce((select items from lists where collection = 'articles'), '[]'::jsonb),
     'timeline', coalesce((select items from lists where collection = 'timeline'), '[]'::jsonb),
     'volunteering', coalesce((select items from lists where collection = 'volunteering'), '[]'::jsonb),
+    'events', coalesce((select items from lists where collection = 'events'), '[]'::jsonb),
     'skills', coalesce((select items from lists where collection = 'skills'), '[]'::jsonb),
     'research', coalesce((select items from lists where collection = 'research'), '[]'::jsonb)
   );
@@ -281,7 +282,7 @@ begin
 end;
 $$;
 
--- Where a credential is referenced (projects, journey, volunteering, ...).
+-- Where a credential is referenced (projects, education, experience, events, ...).
 create or replace function public.credential_usages(p_id text)
 returns table (collection text, id text, title text, visible boolean)
 language sql

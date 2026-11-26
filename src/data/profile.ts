@@ -50,8 +50,6 @@ export const profile: Profile = {
       'I’m Wandana Herath, a Computer Science undergraduate at the University of Jaffna. I’m drawn to the practical side of building software: figuring out what different users need and turning that into an interface they can work with. On our Civil Engineering Management System team, I worked on role-based access and dashboards for engineering and administrative users. Outside coursework, I contributed to the IEEE Student Branch finance committee and started sharing what I’m learning through writing.',
     academicBackground:
       'Computer Science undergraduate at the University of Jaffna since 2023, building strong fundamentals in data structures and algorithms and backend development.',
-    developmentExperience:
-      'Team and coursework projects across the stack: protected React routes and role-based dashboards for the Civil Engineering Management System, a hospital e-channeling system, and a cloud–edge IoT design on Microsoft Azure.',
     professionalInterests: [
       'Full-stack web development',
       'Backend development',
