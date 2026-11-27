@@ -7,6 +7,12 @@ export const workStatusOptions: Array<{ value: WorkStatus | ''; label: string }>
   ...(Object.keys(workStatusLabel) as WorkStatus[]).map((value) => ({ value, label: workStatusLabel[value] })),
 ];
 
+/** Education shows only "Completed" (no In Progress badge). */
+export const educationStatusOptions: Array<{ value: WorkStatus | ''; label: string }> = [
+  { value: '', label: 'Not set (no badge)' },
+  { value: 'completed', label: workStatusLabel.completed },
+];
+
 export const researchStatusOptions: Array<{ value: ResearchStatus | ''; label: string }> = [
   { value: '', label: 'Not set (no badge)' },
   { value: 'early-stage', label: researchStatusLabel['early-stage'] },

@@ -40,7 +40,8 @@ export function Timeline({ entries }: { entries: TimelineView[] }) {
               <div className="rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono text-[0.7rem] uppercase tracking-widest text-accent">{timelineKindLabel[entry.kind] ?? 'School'}</span>
-                  <StatusBadge status={entry.status} />
+                  {/* Education shows only "Completed"; ongoing study is already clear from "… – Present". */}
+                  <StatusBadge status={entry.status === 'completed' ? 'completed' : null} />
                 </div>
                 <h3 className="mt-2 text-lg font-semibold">{entry.title}</h3>
                 {meta && <p className="mt-1 text-sm text-fg-muted">{meta}</p>}

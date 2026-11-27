@@ -9,7 +9,7 @@ export const timeline: TimelineEntry[] = [
   {
     id: 'uoj-computer-science',
     visible: true,
-    status: 'in-progress',
+    status: null,
     kind: 'education',
     title: 'Computer Science',
     organisation: 'University of Jaffna',

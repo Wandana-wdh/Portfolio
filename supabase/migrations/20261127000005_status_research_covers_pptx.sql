@@ -46,10 +46,7 @@ begin
     set data = data || '{"status": "completed"}'::jsonb
     where collection = 'projects' and id = 'cems' and coalesce(data ->> 'status', '') = '';
 
-  -- Current University of Jaffna degree: In Progress.
-  update public.content_entries
-    set data = data || '{"status": "in-progress"}'::jsonb
-    where collection = 'timeline' and id = 'uoj-computer-science' and coalesce(data ->> 'status', '') = '';
+  -- (Education shows no In Progress badge, so the current degree stays unset.)
 
   -- Completed school levels (A/L, O/L, Grade 5): Completed.
   update public.content_entries

@@ -88,7 +88,7 @@ Each project, Education entry and research entry can show a small status badge. 
 2. Choose a **Status**, or **Not set (no badge)** to hide it.
 3. **Save** → **Preview** → **Publish**.
 
-The badge appears on project cards (homepage and Projects page), project pages, Education entries and Undergraduate Research.
+The badge appears on project cards (homepage and Projects page), project pages, Education entries and Undergraduate Research. Education offers only **Completed** (or no badge): ongoing study shows its dates as “… – Present” instead of an In Progress badge.
 
 ### Add a research cover photo
 

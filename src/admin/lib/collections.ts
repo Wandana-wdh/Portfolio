@@ -103,7 +103,7 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
       const t = d as EntryData<TimelineEntry>;
       return {
         title: t.title,
-        subtitle: [timelineKindLabel[t.kind], t.status ? workStatusLabel[t.status] : null, t.organisation, formatRange(t.start, t.end), t.credentialIds?.length ? 'Certificate attached' : null]
+        subtitle: [timelineKindLabel[t.kind], t.status === 'completed' ? workStatusLabel.completed : null, t.organisation, formatRange(t.start, t.end), t.credentialIds?.length ? 'Certificate attached' : null]
           .filter(Boolean)
           .join(' · '),
       };

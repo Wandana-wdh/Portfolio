@@ -118,10 +118,9 @@ What it does:
 - **Storage:** both buckets (`drafts` and `site`) also accept PowerPoint (.pptx) files. The size limit (10 MB), privacy and other allowed types are unchanged.
 - **Statuses, only on drafts and only where none is set yet:**
   - CEMS → *Completed*.
-  - Computer Science at the University of Jaffna → *In Progress*.
   - GCE A/L, GCE O/L and the Grade 5 Scholarship Examination → *Completed*.
   - ZK-Mangrove → *Early-stage* (it already is).
-  - Every other project, Education entry and research entry stays unset, so no badge appears until you choose a status in `/admin`.
+  - Every other project, Education entry and research entry stays unset, so no badge appears until you choose a status in `/admin`. Education entries show only *Completed* — your current degree has no badge, because its dates already say *Present*.
 - No changes to order, uploads, text or visibility. Research covers and presentations need no other database change.
 
 It is additive and safe to run again: the second run changes nothing.

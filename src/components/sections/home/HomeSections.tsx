@@ -32,7 +32,7 @@ export function FeaturedProjectsSection({ projects }: { projects: Project[] }) {
         description="Software built around real workflows — from role-based dashboards to department automation."
         action={{ label: 'All projects', to: '/projects' }}
       />
-      <ul className={projects.length === 2 || projects.length === 4 ? 'grid grid-cols-1 auto-rows-fr items-stretch gap-6 sm:grid-cols-2' : cardGrid}>
+      <ul className={cardGrid}>
         {projects.map((p, i) => (
           <li key={p.id}>
             <Reveal delay={Math.min(i * 0.06, 0.2)} className="h-full">
