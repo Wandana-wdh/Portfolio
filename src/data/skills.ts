@@ -28,15 +28,15 @@ export const skillGroups: SkillGroup[] = [
     title: 'Backend Development',
     description: 'APIs and server-side application logic.',
     icon: 'server',
-    skills: ['Node.js', 'Express', 'REST APIs', 'Authentication (Supabase Auth)', 'File Storage (Supabase Storage)'],
+    skills: ['Node.js', 'Express', 'REST APIs'],
   },
   {
     id: 'databases',
     visible: true,
-    title: 'Databases',
-    description: 'Document and relational data.',
+    title: 'Database & Backend Services',
+    description: 'Databases and hosted backend services.',
     icon: 'database',
-    skills: ['MongoDB', 'MySQL', 'PostgreSQL', 'Supabase'],
+    skills: ['MongoDB', 'MySQL', 'PostgreSQL', 'Supabase', 'Supabase Auth', 'Supabase Storage'],
   },
   {
     id: 'cloud',
@@ -57,9 +57,9 @@ export const skillGroups: SkillGroup[] = [
   {
     id: 'tools',
     visible: true,
-    title: 'Development Tools',
+    title: 'Tooling & Deployment',
     description: 'Everyday tooling for collaboration and delivery.',
     icon: 'wrench',
-    skills: ['Git', 'GitHub', 'VS Code', 'Postman', 'Linux', 'Vite', 'Vercel Deployment'],
+    skills: ['Git', 'GitHub', 'VS Code', 'Postman', 'Linux', 'Vite', 'Vercel'],
   },
 ];

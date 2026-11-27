@@ -81,10 +81,17 @@ test('import: drafts and the first published version preserve order, URLs and vi
   assert.deepEqual(c.volunteering[0].credentialIds, ['ieee-appreciation']);
   assert.equal(c.volunteering[0].type, 'volunteering');
   assert.deepEqual(c.timeline.map((t) => t.id), ['uoj-computer-science', 'gce-advanced-level', 'gce-ordinary-level', 'grade-5-scholarship']);
-  assert.deepEqual(c.events.map((e) => [e.id, e.credentialIds]), [
-    ['aws-career-meetup', ['aws-meetup-level-up-cloud']],
-    ['joomla-cms-workshop', ['joomla-workshop']],
+  assert.deepEqual(c.events.map((e) => [e.id, e.type, e.credentialIds]), [
+    ['yarl-dreamin-25', 'conference', []],
+    ['yarlinsight-2', 'bootcamp', []],
+    ['aws-meetup-yarl-salesforce-ohana', 'meetup', []],
+    ['aws-career-meetup', 'meetup', ['aws-meetup-level-up-cloud']],
+    ['joomla-cms-workshop', 'workshop', ['joomla-workshop']],
   ]);
+  assert.ok(c.events.every((e) => e.slug === e.id && Array.isArray(e.gallery) && e.cover === null), 'events have pages and empty galleries');
+  assert.deepEqual(c.volunteering.map((v) => [v.id, v.term]), [['ieee-sb-finance-committee', '2025/2026 term'], ['jamborieee-2025-finance-volunteer', null]]);
+  assert.deepEqual(c.projects.filter((p) => p.featured).map((p) => p.id), ['cems', 'hospital-e-channeling', 'edge-azure-iot', 'personal-portfolio']);
+  assert.equal(c.projects[3].title, 'Personal Portfolio & Content Dashboard');
   assert.equal(c.profile.about.developmentExperience, undefined);
   const allSkills = c.skills.flatMap((g) => g.skills.map((x) => x.toLowerCase()));
   assert.equal(new Set(allSkills).size, allSkills.length, 'no duplicate skills');
@@ -208,13 +215,20 @@ test('owner: one certificate in several places, usages, and delete removes refer
 test('owner: events and experience can be added, reordered, hidden and deleted', async () => {
   await owner(async (tx) => {
     const saved = await one(tx, `select * from public.save_entry('events', 'cloud-day', $1::jsonb)`, [
-      JSON.stringify({ title: 'Cloud Day', organiser: null, date: '2026-05', description: null, url: 'https://example.org', credentialIds: [] }),
+      JSON.stringify({ slug: 'cloud-day', title: 'Cloud Day', type: 'meetup', organiser: null, location: null, date: '2026-05', description: null, recap: [], url: 'https://example.org', cover: null, gallery: [], credentialIds: [] }),
     ]);
-    assert.equal(saved.sort_order, 2, 'appended after the two imported events');
-    await tx.query(`select public.reorder_entries('events', $1)`, [['cloud-day', 'aws-career-meetup', 'joomla-cms-workshop']]);
+    assert.equal(saved.sort_order, 5, 'appended after the five imported events');
+    const ids = (await rows(tx, `select id from public.admin_entries() where collection = 'events'`)).map((r) => r.id);
+    await tx.query(`select public.reorder_entries('events', $1)`, [['cloud-day', ...ids.filter((i) => i !== 'cloud-day')]]);
     await tx.query(`select public.set_entry_visibility('events', 'joomla-cms-workshop', false)`);
     let snap = (await one(tx, 'select public.draft_snapshot() as s')).s;
-    assert.deepEqual(snap.events.map((e) => e.id), ['cloud-day', 'aws-career-meetup'], 'order kept, hidden left out');
+    assert.equal(snap.events[0].id, 'cloud-day', 'order kept');
+    assert.ok(!snap.events.some((e) => e.id === 'joomla-cms-workshop'), 'hidden left out');
+    await rejects(
+      failing(tx, `select public.save_entry('events', 'copy', '{"title":"Copy","slug":"yarlinsight-2"}'::jsonb)`),
+      /duplicate key|23505/,
+      'event page URLs are unique',
+    );
     await tx.query(`select public.delete_entry('events', 'cloud-day')`);
     await rejects(failing(tx, `select public.save_entry('events', 'untitled', '{"title":""}'::jsonb)`), /has_title/, 'events need a name');
 
@@ -223,7 +237,7 @@ test('owner: events and experience can be added, reordered, hidden and deleted',
     ]);
     await rejects(failing(tx, `select public.save_entry('volunteering', 'no-role', '{"role":" "}'::jsonb)`), /volunteering_has_role/);
     snap = (await one(tx, 'select public.draft_snapshot() as s')).s;
-    assert.deepEqual(snap.volunteering.map((v) => v.id), ['ieee-sb-finance-committee', 'campus-ambassador']);
+    assert.deepEqual(snap.volunteering.map((v) => v.id), ['ieee-sb-finance-committee', 'jamborieee-2025-finance-volunteer', 'campus-ambassador']);
     throw new Error('rollback');
   }).catch((e) => assert.equal(e.message, 'rollback'));
   await rejects(stranger((tx) => rows(tx, `select public.save_entry('events', 'x', '{"title":"x"}'::jsonb)`)), /42501|owner/);

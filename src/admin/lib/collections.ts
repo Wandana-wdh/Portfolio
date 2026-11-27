@@ -9,7 +9,7 @@ import type {
   TimelineEntry,
   VolunteeringEntry,
 } from '@/types';
-import { credentialTypeLabel, experienceTypeLabel, researchStatusLabel, timelineKindLabel } from '@/lib/labels';
+import { credentialTypeLabel, eventTypeLabel, experienceTypeLabel, researchStatusLabel, roleWhen, timelineKindLabel } from '@/lib/labels';
 import { formatDate, formatRange } from '@/lib/utils';
 
 /** Entry data as stored in the database (id/visible live in their own columns). */
@@ -36,11 +36,12 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     hasSlug: true,
     describe: (d) => {
       const p = d as EntryData<Project>;
-      return { title: p.title, subtitle: [p.category, p.team ? 'Team project' : null].filter(Boolean).join(' · ') };
+      return { title: p.title, subtitle: [p.featured ? 'Featured' : null, p.category, p.team ? 'Team project' : null].filter(Boolean).join(' · ') };
     },
     publicPath: (d) => `/projects/${(d as EntryData<Project>).slug}`,
     create: (): EntryData<Project> => ({
       slug: '',
+      featured: false,
       title: '',
       summary: '',
       description: [],
@@ -116,42 +117,62 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
   volunteering: {
     label: 'Volunteering & Experience',
     singular: 'role',
-    description: 'Roles where you contributed — volunteering, ambassador and student roles, internships. The order here is the order on the site.',
+    description: 'Roles where you contributed — volunteering, ambassador and student roles, internships. Each has its own page with photos. The order here is the order on the site.',
+    hasSlug: true,
     describe: (d) => {
       const v = d as EntryData<VolunteeringEntry>;
       return {
         title: v.role,
-        subtitle: [experienceTypeLabel[v.type ?? 'volunteering'], v.organisation, formatRange(v.start, v.end)].filter(Boolean).join(' · '),
+        subtitle: [experienceTypeLabel[v.type ?? 'volunteering'], v.organisation, roleWhen(v), v.gallery?.length ? `${v.gallery.length} photo${v.gallery.length === 1 ? '' : 's'}` : null]
+          .filter(Boolean)
+          .join(' · '),
       };
     },
-    publicPath: () => '/about#volunteering',
+    publicPath: (d) => `/experience/${(d as EntryData<VolunteeringEntry>).slug}`,
     create: (): EntryData<VolunteeringEntry> => ({
+      slug: '',
       type: 'volunteering',
       role: '',
       organisation: '',
+      term: null,
       start: null,
       end: null,
       description: null,
       highlights: [],
       url: null,
       credentialIds: [],
+      cover: null,
+      gallery: [],
+      recap: [],
     }),
   },
   events: {
     label: 'Events & Participation',
     singular: 'event',
-    description: 'Events, meetups and workshops you attended. The order here is the order on the site.',
+    description: 'Conferences, bootcamps, meetups and workshops you took part in. Each has its own page with photos. The order here is the order on the site.',
+    hasSlug: true,
     describe: (d) => {
       const e = d as EntryData<EventEntry>;
-      return { title: e.title, subtitle: [e.organiser, formatDate(e.date)].filter(Boolean).join(' · ') };
+      return {
+        title: e.title,
+        subtitle: [eventTypeLabel[e.type ?? 'other'], e.organiser, formatDate(e.date), e.gallery?.length ? `${e.gallery.length} photo${e.gallery.length === 1 ? '' : 's'}` : null]
+          .filter(Boolean)
+          .join(' · '),
+      };
     },
-    publicPath: () => '/about#events',
+    publicPath: (d) => `/events/${(d as EntryData<EventEntry>).slug}`,
     create: (): EntryData<EventEntry> => ({
+      slug: '',
       title: '',
+      type: 'meetup',
       organiser: null,
+      location: null,
       date: null,
       description: null,
+      recap: [],
       url: null,
+      cover: null,
+      gallery: [],
       credentialIds: [],
     }),
   },
@@ -208,9 +229,9 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     }),
   },
   skills: {
-    label: 'Skills',
+    label: 'Tools & Technologies',
     singular: 'skill group',
-    description: 'Skill groups in Technical Expertise.',
+    description: 'Skill groups in the Tools and Technologies section (homepage) and Skills on the About page. The order here is the order on the site.',
     describe: (d) => {
       const s = d as EntryData<SkillGroup>;
       return { title: s.title, subtitle: s.skills.slice(0, 4).join(', ') };

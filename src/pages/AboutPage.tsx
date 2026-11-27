@@ -89,15 +89,13 @@ export default function AboutPage() {
 
       {volunteering.length > 0 && (
         <Section id="volunteering" labelledBy="volunteering-title" className="border-t border-line bg-surface">
-          <div className="mx-auto max-w-4xl">
-            <SectionHeading
-              id="volunteering-title"
-              eyebrow="Experience"
-              title="Volunteering & Experience"
-              description="Roles where I’ve contributed beyond coursework."
-            />
-            <VolunteeringList entries={volunteering} />
-          </div>
+          <SectionHeading
+            id="volunteering-title"
+            eyebrow="Experience"
+            title="Volunteering & Experience"
+            description="Roles where I’ve contributed beyond coursework."
+          />
+          <VolunteeringList entries={volunteering} />
         </Section>
       )}
 
@@ -107,15 +105,13 @@ export default function AboutPage() {
           labelledBy="events-title"
           className={volunteering.length > 0 ? 'border-t border-line' : 'border-t border-line bg-surface'}
         >
-          <div className="mx-auto max-w-4xl">
-            <SectionHeading
-              id="events-title"
-              eyebrow="Participation"
-              title="Events & Participation"
-              description="Events, meetups and workshops I’ve attended."
-            />
-            <EventsList entries={events} />
-          </div>
+          <SectionHeading
+            id="events-title"
+            eyebrow="Participation"
+            title="Events & Participation"
+            description="Conferences, bootcamps, meetups and workshops I’ve taken part in."
+          />
+          <EventsList entries={events} />
         </Section>
       )}
     </>

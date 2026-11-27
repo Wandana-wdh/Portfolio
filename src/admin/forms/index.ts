@@ -1,6 +1,7 @@
 import type { ContentCollection } from '@/types';
 import { credentialForm } from './CredentialForm';
-import { eventForm, timelineForm, volunteeringForm } from './JourneyForms';
+import { eventForm, volunteeringForm } from './ActivityForms';
+import { timelineForm } from './JourneyForms';
 import { articleForm, researchForm, skillForm } from './OtherForms';
 import { projectForm } from './ProjectForm';
 import type { FormDefinition } from './types';

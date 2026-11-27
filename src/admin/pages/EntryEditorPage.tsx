@@ -31,6 +31,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export type EditorLoaderData = Awaited<ReturnType<typeof loader>>;
 
+/** Defaults first, so entries saved before a field existed still get it (a missing page URL defaults to the id). */
+function withDefaults(defaults: Record<string, unknown>, row: EntryRow | null): Record<string, unknown> {
+  if (!row) return defaults;
+  const data = { ...defaults, ...row.data };
+  if ('slug' in defaults && !data.slug) data.slug = row.id;
+  return data;
+}
+
 export function SaveStatus({ state, dirty }: { state: SaveState; dirty: boolean }) {
   return (
     <p className="text-sm" aria-live="polite" role={state.kind === 'error' ? 'alert' : undefined}>
@@ -85,8 +93,7 @@ function Editor({ collection, row, takenIds, takenSlugs, credentials }: EditorLo
   const editor = useEntryEditor<Record<string, unknown>>({
     collection,
     id: id || draftKey,
-    // Defaults first, so entries saved before a field existed still get it.
-    initial: { ...(config.create() as Record<string, unknown>), ...(row?.data ?? {}) },
+    initial: withDefaults(config.create() as Record<string, unknown>, row),
     initialVisible: row?.visible ?? true,
     isNew,
     onSaved: refreshStatus,

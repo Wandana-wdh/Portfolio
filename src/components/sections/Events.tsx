@@ -1,29 +1,33 @@
-import { CalendarCheck } from 'lucide-react';
-import type { EventView } from '@/services';
-import { formatDate } from '@/lib/utils';
-import { CredentialLinks } from './CredentialLinks';
-import { EntryGrid, EntryIcon, EntryLink } from './Volunteering';
+import type { EventEntry } from '@/types';
+import { eventArtwork, eventTypeLabel } from '@/lib/labels';
+import { cardGrid } from '@/lib/layout';
+import { cn, formatDate } from '@/lib/utils';
+import { EntryCard } from '@/components/cards/EntryCard';
+import { Reveal } from '@/components/ui/Reveal';
 
-/** Events & Participation: events, meetups and workshops attended. */
-export function EventsList({ entries, className }: { entries: EventView[]; className?: string }) {
+/** Events & Participation: one card per event, linking to the event's page. */
+export function EventsList({ entries, className, headingLevel }: { entries: EventEntry[]; className?: string; headingLevel?: 'h2' | 'h3' }) {
+  if (entries.length === 0) return null;
   return (
-    <EntryGrid entries={entries} className={className}>
-      {(e) => (
-        <>
-          <EntryIcon icon={CalendarCheck} />
-          <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-semibold leading-snug">{e.title}</h3>
-            {e.organiser && <p className="mt-1 text-sm text-fg-muted">{e.organiser}</p>}
-            {e.date && <p className="mt-1 font-mono text-xs text-fg-subtle">{formatDate(e.date)}</p>}
-            {e.description && <p className="mt-3 text-sm leading-relaxed text-fg-muted">{e.description}</p>}
-            <CredentialLinks
-              credentials={e.credentials}
-              extra={e.url && <EntryLink href={e.url}>Event page</EntryLink>}
-              className="mt-4"
+    <ul className={cn(cardGrid, className)}>
+      {entries.map((e, i) => (
+        <li key={e.id}>
+          <Reveal delay={Math.min(i * 0.06, 0.2)} className="h-full">
+            <EntryCard
+              href={`/events/${e.slug}`}
+              title={e.title}
+              badge={eventTypeLabel[e.type] ?? 'Event'}
+              meta={[e.organiser, e.location].filter(Boolean).join(' · ')}
+              when={formatDate(e.date) || null}
+              summary={e.description}
+              cover={e.cover}
+              artwork={eventArtwork[e.type] ?? 'lattice'}
+              actionLabel="View Event"
+              headingLevel={headingLevel}
             />
-          </div>
-        </>
-      )}
-    </EntryGrid>
+          </Reveal>
+        </li>
+      ))}
+    </ul>
   );
 }

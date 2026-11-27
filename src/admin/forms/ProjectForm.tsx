@@ -55,6 +55,12 @@ function Form({ data, update, errors, folder, onUploaded, credentials, isNew }: 
           <TextField label="Year (optional)" value={data.year} onChange={(year) => update({ year })} error={errors.year} placeholder="2026" />
         </div>
         <CheckboxField label="Team project" checked={data.team} onChange={(team) => update({ team })} hint="Shows a “Team” badge on the card." />
+        <CheckboxField
+          label="Featured on the homepage"
+          checked={data.featured === true}
+          onChange={(featured) => update({ featured })}
+          hint="Featured projects appear in Featured Projects on the homepage, in the order of this list. Every project is always on the Projects page."
+        />
       </FormSection>
 
       <FormSection title="Summary and contribution">
@@ -135,6 +141,7 @@ export const projectForm: FormDefinition<P> = {
   },
   prepare: (d) => ({
     ...d,
+    featured: d.featured === true,
     title: d.title.trim(),
     shortTitle: d.shortTitle?.trim() || undefined,
     summary: d.summary.trim(),

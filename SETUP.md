@@ -19,6 +19,7 @@ In the project, open **SQL Editor → New query**, then run these files from thi
 1. `supabase/migrations/20261126000001_cms_schema.sql` — tables, Row Level Security, storage buckets and publishing functions.
 2. `supabase/migrations/20261126000002_import_content.sql` — imports the portfolio (same URLs, project order, certificate order and visibility) and publishes it as version 1. On a project that already has content it does nothing.
 3. `supabase/migrations/20261127000003_sections_and_portfolio.sql` — Education, Volunteering & Experience and Events & Participation (on a new project it only updates the schema, because step 2 already imported everything).
+4. `supabase/migrations/20261127000004_events_roles_photos.sql` — event and role pages with photos, featured projects (on a new project it changes nothing, because step 2 already imported everything).
 
 Each should finish with “Success. No rows returned”. Running them again is safe.
 
@@ -92,7 +93,33 @@ Expected result: **All checks passed.** `.env.local` is ignored by git — never
 
 ## Updating a live site
 
-Some code updates add a new file to `supabase/migrations/`. Run **only the new file**, once, in **SQL Editor → New query → Run**. These update files only add what is missing, and they never overwrite your edits, uploads, visibility settings or certificate links. Don’t re-run the earlier files: there’s no need, and the import file skips itself on a site that already has content.
+Some code updates add a new file to `supabase/migrations/`. Run **only the new files you haven’t run yet, in number order**, once each, in **SQL Editor → New query → Run**. These update files only add what is missing, and they never overwrite your edits, uploads, visibility settings or certificate links. Don’t re-run the earlier files: there’s no need, and the import file skips itself on a site that already has content.
+
+### Which updates have I run?
+
+In the SQL Editor run `select * from public.content_patches;`
+
+- *relation "public.content_patches" does not exist* → run update 3, then update 4.
+- Only `2026-11-27-sections` → run update 4.
+- Both `2026-11-27-sections` and `2026-11-27-events-roles-photos` → nothing to run.
+
+### Update 4 (27 Nov 2026): `20261127000004_events_roles_photos.sql`
+
+Needed for the Events & Participation and Volunteering & Experience photo cards, the new events and roles, and the featured portfolio project. Run update 3 first if you haven’t (update 4 stops with a message if update 3 is missing).
+
+1. In Supabase, open **SQL Editor → New query**, paste the whole of `supabase/migrations/20261127000004_events_roles_photos.sql`, and click **Run**. The messages show *Content update 2026-11-27-events-roles-photos applied to your drafts*.
+2. Push the code to GitHub and wait for the Vercel deployment to finish. You can do this before or after step 1.
+3. Open `/admin` → **Preview** → check the homepage, an event page and a role page → **Publish**.
+
+What it does — **only to your drafts**:
+
+- **Featured Projects:** marks the three projects currently on your homepage as featured, plus the portfolio project. You choose which projects are featured with the *Featured on the homepage* checkbox from now on.
+- **Portfolio project:** renames it *Personal Portfolio & Content Dashboard*, sets the new card summary and marks it featured. Its overview is replaced with the short owner-workflow text only if you haven’t edited it. Its photos, links and position are kept. If you deleted it, it is added back at the end.
+- **Events & Participation:** adds *Yarl Dreamin’ 25*, *YarlInsight 2.0* and *AWS Meetup with Yarl Salesforce Ohana* at the top, without dates or links. Existing events get a page URL, a type, and empty cover, gallery and recap fields; your text, photos and certificates are kept. An event whose name you already use is skipped.
+- **Volunteering & Experience:** every role gets a page URL and empty cover, gallery and write-up fields. The IEEE role gets the *2025/2026 term* and the wording *Served on the finance committee of the IEEE Student Branch at the University of Jaffna.* Its dates and Certificate of Appreciation link are kept. Adds *Event Volunteer (Finance), JamborIEEE 2025* unless a JamborIEEE role exists. Your other roles (e.g. CodeSprint X 2025 Event Ambassador) aren’t changed.
+- **Tools & Technologies:** replaces the longer labels added by update 3 (*Authentication (Supabase Auth)*, *File Storage (Supabase Storage)*, *Vercel Deployment*) with *Supabase Auth*, *Supabase Storage* and *Vercel*. It renames *Databases* to *Database & Backend Services* and *Development Tools* to *Tooling & Deployment*, only if you haven’t renamed them. It adds any missing React, TypeScript, Tailwind CSS, Supabase, PostgreSQL, Vite, Git/GitHub and Vercel entries without duplicates.
+
+Running it again changes nothing.
 
 ### Update 3 (27 Nov 2026): `20261127000003_sections_and_portfolio.sql`
 
@@ -122,8 +149,9 @@ Running it a second time changes nothing (it records itself in `public.content_p
 - **Drafts vs. published.** Every save is a private draft. **Publish** copies the files the drafts use into the public `site` bucket and stores a snapshot. Visitors only ever read the latest snapshot.
 - **Hide vs. delete.** *Hide* keeps the entry (show it again any time); after you publish, it and its files are no longer public. *Delete* is permanent and first shows everywhere the entry is used.
 - **Reordering.** The order in each list is the order on the site — use the ↑ ↓ buttons, then publish.
+- **Photos on events and roles.** Each event and role has its own page. A cover photo appears on the card and the page, and gallery photos (with captions and alt text) appear on the page. Without a cover the card shows a generated graphic, and an empty gallery isn’t shown.
 - **One certificate, many places.** Attach a certificate to projects, Education, Volunteering & Experience or Events & Participation from those editors. Tick an existing one, or use **New certificate with file** to upload a PDF or image and attach it in one step. It is one record, so editing or replacing it in **Certificates** updates every place. Turn off *List on the Achievements page* for certificates that should only appear where they are attached (e.g. school certificates under Education).
-- **Certificate buttons.** Education shows a *View certificate* button only when the attached certificate has a file. Experience and events link to the file, or to the certificate on the Achievements page when there is no file.
+- **Certificate buttons.** Education shows a *View certificate* button only when the attached certificate has a file. Event and role pages link to the file, or to the certificate on the Achievements page when there is no file.
 - **Replacing a file** uploads it to a new location first; your current file stays in place if the upload fails, and is removed only after you save.
 - **Uploads**: PDF, JPG, PNG, WebP, GIF or AVIF, up to 10 MB each. Remove personal details (index/ID numbers, addresses) from certificates before uploading.
 

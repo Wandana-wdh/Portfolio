@@ -12,6 +12,7 @@ export const projects: Project[] = [
   {
     id: 'cems',
     visible: true,
+    featured: true,
     slug: 'civil-engineering-management-system',
     title: 'Civil Engineering Management System (CEMS)',
     shortTitle: 'CEMS',
@@ -43,6 +44,7 @@ export const projects: Project[] = [
   {
     id: 'hospital-e-channeling',
     visible: true,
+    featured: true,
     slug: 'hospital-e-channeling-system',
     title: 'Hospital E-Channeling System',
     summary: 'An e-channeling system for finding doctors and booking hospital appointments online.',
@@ -65,6 +67,7 @@ export const projects: Project[] = [
   {
     id: 'edge-azure-iot',
     visible: true,
+    featured: true,
     slug: 'edge-azure-iot-department-automation',
     title: 'Edge and Azure IoT Department Automation',
     summary:
@@ -95,15 +98,15 @@ export const projects: Project[] = [
   {
     id: 'personal-portfolio',
     visible: true,
+    featured: true,
     slug: 'personal-portfolio-website',
-    title: 'Personal Portfolio Website',
+    title: 'Personal Portfolio & Content Dashboard',
     summary:
-      'A responsive portfolio for my projects, education, certificates, and writing, with a private editor for updating content and publishing changes.',
+      'A responsive portfolio for my projects, education, certificates, and writing, with a private dashboard for editing content and publishing updates.',
     description: [
-      'This website is my personal portfolio. Visitors can browse my projects, education, certificates, volunteering, events and articles on responsive pages with light and dark themes. The frontend is built with React, TypeScript, Vite and Tailwind CSS.',
-      'Behind the public pages is a private editor that only my account can sign in to, using Supabase Auth. I sign in, edit an entry and save it as a draft, preview the whole site with my drafts, and publish when it is ready. Publishing updates the live site without changing code or redeploying.',
-      'From the editor I can upload certificates as PDFs or images, and project photos with captions and alt text. Uploads stay private in Supabase Storage until I publish. Content is stored in a PostgreSQL database on Supabase, with Row Level Security so that only the owner account can change it.',
-      'I connected the GitHub repository to Vercel, so changes pushed to GitHub are built and deployed automatically, and configured the Vercel project with the Supabase project URL and publishable key so the site loads its published content from Supabase.',
+      'A responsive portfolio for my projects, education, volunteering, events, certificates and writing, with light and dark themes. It is built with React, TypeScript, Vite and Tailwind CSS.',
+      'Behind the public pages is a private content dashboard. I sign in with Supabase Auth, edit content, upload certificates and photos to Supabase Storage, save my changes as drafts, preview the whole site with those drafts, and publish when it is ready — without changing code or redeploying.',
+      'Content is stored in PostgreSQL on Supabase, with Row Level Security so that only my account can change it. I connected the GitHub repository to Vercel, which builds and deploys code changes automatically.',
     ],
     category: 'Web Application',
     tech: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'Supabase', 'PostgreSQL', 'GitHub', 'Vercel'],

@@ -44,6 +44,8 @@ export interface EventView extends EventEntry {
 export interface PortfolioRepository {
   getProfile(): Promise<Profile>;
   listProjects(): Promise<Project[]>;
+  /** Projects marked as featured (homepage), in display order. */
+  listFeaturedProjects(): Promise<Project[]>;
   getProject(slug: string): Promise<Project | null>;
   /** Credentials shown on the Achievements page. */
   listCredentials(): Promise<CredentialView[]>;
@@ -55,6 +57,8 @@ export interface PortfolioRepository {
   listVolunteering(): Promise<VolunteeringView[]>;
   /** Events & Participation. */
   listEvents(): Promise<EventView[]>;
+  getEvent(slug: string): Promise<EventView | null>;
+  getVolunteering(slug: string): Promise<VolunteeringView | null>;
   listSkillGroups(): Promise<SkillGroup[]>;
   listResearch(): Promise<ResearchProject[]>;
   getResearch(slug: string): Promise<ResearchProject | null>;

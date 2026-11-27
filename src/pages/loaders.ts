@@ -6,8 +6,8 @@ import { getRepository, loadSiteContent } from '@/services';
  * filtered to visible entries in display order (see services/contentRepository).
  */
 
-/** How many entries the homepage previews show (the first N visible ones). */
-export const HOME_PREVIEW = { projects: 3, credentials: 3, articles: 3 } as const;
+/** How many entries the homepage previews show (the first N visible ones). Featured projects: all marked ones. */
+export const HOME_PREVIEW = { credentials: 3, articles: 3 } as const;
 
 function notFound(): never {
   throw new Response('Not Found', { status: 404, statusText: 'Not Found' });
@@ -22,7 +22,7 @@ export async function rootLoader() {
 export async function homeLoader() {
   const portfolio = await getRepository();
   const [projects, skills, timeline, volunteering, events, credentials, articles] = await Promise.all([
-    portfolio.listProjects(),
+    portfolio.listFeaturedProjects(),
     portfolio.listSkillGroups(),
     portfolio.listTimeline(),
     portfolio.listVolunteering(),
@@ -31,7 +31,7 @@ export async function homeLoader() {
     portfolio.listArticles(),
   ]);
   return {
-    projects: projects.slice(0, HOME_PREVIEW.projects),
+    projects,
     skills,
     timeline,
     volunteering,
@@ -77,6 +77,20 @@ export async function projectDetailLoader({ params }: LoaderFunctionArgs) {
   const credentials = await portfolio.getCredentials(project.credentialIds);
   const others = all.filter((p) => p.id !== project.id).slice(0, 2);
   return { project, credentials, others };
+}
+
+export async function eventDetailLoader({ params }: LoaderFunctionArgs) {
+  const portfolio = await getRepository();
+  const [event, all] = await Promise.all([portfolio.getEvent(params.slug ?? ''), portfolio.listEvents()]);
+  if (!event) notFound();
+  return { event, others: all.filter((e) => e.id !== event.id).slice(0, 3) };
+}
+
+export async function experienceDetailLoader({ params }: LoaderFunctionArgs) {
+  const portfolio = await getRepository();
+  const [role, all] = await Promise.all([portfolio.getVolunteering(params.slug ?? ''), portfolio.listVolunteering()]);
+  if (!role) notFound();
+  return { role, others: all.filter((v) => v.id !== role.id).slice(0, 3) };
 }
 
 export async function achievementsLoader() {

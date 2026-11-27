@@ -103,7 +103,6 @@ export function Component() {
           </div>
           <TextAreaField label="Introduction" required rows={3} value={data.intro} onChange={(intro) => update({ intro })} error={errors.intro} />
           <TextField label="Availability pill (optional)" value={data.availability} onChange={(availability) => update({ availability })} hint="Leave empty to hide it." />
-          <StringListField label="Focus strip" values={data.focusAreas} onChange={(focusAreas) => update({ focusAreas })} itemLabel="focus area" addLabel="Add focus area" hint="Short labels under the hero." />
           <ImageField
             label="Portrait photo"
             value={data.portrait}

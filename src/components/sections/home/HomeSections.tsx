@@ -1,7 +1,8 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Article, Profile, Project, SkillGroup } from '@/types';
-import type { CredentialView, EventView, TimelineView, VolunteeringView } from '@/services';
+import type { EventEntry, VolunteeringEntry } from '@/types';
+import type { CredentialView, TimelineView } from '@/services';
 import { siteConfig } from '@/data/site';
 import { cardGrid } from '@/lib/layout';
 import { ArticleCard } from '@/components/cards/ArticleCard';
@@ -31,7 +32,7 @@ export function FeaturedProjectsSection({ projects }: { projects: Project[] }) {
         description="Software built around real workflows — from role-based dashboards to department automation."
         action={{ label: 'All projects', to: '/projects' }}
       />
-      <ul className={cardGrid}>
+      <ul className={projects.length === 2 || projects.length === 4 ? 'grid grid-cols-1 auto-rows-fr items-stretch gap-6 sm:grid-cols-2' : cardGrid}>
         {projects.map((p, i) => (
           <li key={p.id}>
             <Reveal delay={Math.min(i * 0.06, 0.2)} className="h-full">
@@ -99,38 +100,34 @@ export function EducationSection({ entries }: { entries: TimelineView[] }) {
   );
 }
 
-export function ExperienceSection({ entries }: { entries: VolunteeringView[] }) {
+export function ExperienceSection({ entries }: { entries: VolunteeringEntry[] }) {
   if (entries.length === 0) return null;
   return (
     <Section id="experience" labelledBy="experience-title">
-      <div className="mx-auto max-w-4xl">
-        <SectionHeading
-          id="experience-title"
-          index="05"
-          eyebrow="Experience"
-          title="Volunteering & Experience"
-          description="Roles where I’ve contributed beyond coursework."
-        />
-        <VolunteeringList entries={entries} />
-      </div>
+      <SectionHeading
+        id="experience-title"
+        index="05"
+        eyebrow="Experience"
+        title="Volunteering & Experience"
+        description="Roles where I’ve contributed beyond coursework."
+      />
+      <VolunteeringList entries={entries} />
     </Section>
   );
 }
 
-export function EventsSection({ entries }: { entries: EventView[] }) {
+export function EventsSection({ entries }: { entries: EventEntry[] }) {
   if (entries.length === 0) return null;
   return (
     <Section id="events" labelledBy="events-title" className="border-y border-line bg-surface">
-      <div className="mx-auto max-w-4xl">
-        <SectionHeading
-          id="events-title"
-          index="06"
-          eyebrow="Participation"
-          title="Events & Participation"
-          description="Events, meetups and workshops I’ve attended."
-        />
-        <EventsList entries={entries} />
-      </div>
+      <SectionHeading
+        id="events-title"
+        index="06"
+        eyebrow="Participation"
+        title="Events & Participation"
+        description="Conferences, bootcamps, meetups and workshops I’ve taken part in."
+      />
+      <EventsList entries={entries} />
     </Section>
   );
 }

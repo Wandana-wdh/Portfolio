@@ -30,7 +30,7 @@ export function Hero({ profile, featured }: { profile: Profile; featured: Projec
         className="absolute -top-40 right-0 size-[36rem] rounded-full bg-emerald-brand/10 blur-3xl dark:bg-emerald-brand/[0.07]"
       />
 
-      <Container className="relative grid items-center gap-16 pt-10 pb-20 sm:pt-14 lg:grid-cols-[1.12fr_0.88fr] lg:gap-14 lg:pt-20 lg:pb-28">
+      <Container className="relative grid items-center gap-16 pt-10 pb-4 sm:pt-14 lg:grid-cols-[1.12fr_0.88fr] lg:gap-14 lg:pt-20 lg:pb-8">
         <motion.div variants={container} initial={reduce ? false : 'hidden'} animate="show">
           {profile.availability && (
             <motion.div {...anim}>
@@ -120,19 +120,6 @@ export function Hero({ profile, featured }: { profile: Profile; featured: Projec
         </motion.div>
       </Container>
 
-      {/* Focus strip */}
-      <div className="relative border-y border-line bg-surface/60">
-        <Container>
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-5 font-mono text-xs uppercase tracking-[0.16em] text-fg-muted sm:justify-between">
-            {profile.focusAreas.map((area) => (
-              <li key={area} className="flex items-center gap-2">
-                <span aria-hidden className="size-1.5 rounded-full bg-accent" />
-                {area}
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </div>
     </section>
   );
 }

@@ -1,4 +1,5 @@
-import type { CredentialType, ExperienceType, ResearchStatus, TimelineKind } from '@/types';
+import type { ArtworkVariant, CredentialType, EventType, ExperienceType, ResearchStatus, TimelineKind } from '@/types';
+import { formatRange } from './utils';
 
 export const researchStatusLabel: Record<ResearchStatus, string> = {
   'early-stage': 'Early-stage research',
@@ -55,3 +56,39 @@ export const experienceTypeLabel: Record<ExperienceType, string> = {
 
 /** Early-stage and ongoing research show a "live" status dot. */
 export const isActiveResearch = (status: ResearchStatus) => status === 'early-stage' || status === 'ongoing';
+
+export const eventTypeLabel: Record<EventType, string> = {
+  conference: 'Conference',
+  bootcamp: 'Bootcamp',
+  meetup: 'Meetup',
+  workshop: 'Workshop',
+  hackathon: 'Hackathon',
+  webinar: 'Webinar',
+  competition: 'Competition',
+  other: 'Event',
+};
+
+/** Fallback graphics for cards without a cover photo. */
+export const eventArtwork: Record<EventType, ArtworkVariant> = {
+  conference: 'network',
+  bootcamp: 'blocks',
+  meetup: 'pulse',
+  workshop: 'grid',
+  hackathon: 'circuit',
+  webinar: 'waves',
+  competition: 'lattice',
+  other: 'lattice',
+};
+
+export const experienceArtwork: Record<ExperienceType, ArtworkVariant> = {
+  volunteering: 'waves',
+  ambassador: 'network',
+  'student-role': 'lattice',
+  internship: 'circuit',
+  work: 'grid',
+};
+
+/** "2025/2026 term", or the role's date range when no term is set. */
+export function roleWhen(v: { term?: string | null; start: string | null; end: string | null }): string | null {
+  return v.term?.trim() || formatRange(v.start, v.end);
+}

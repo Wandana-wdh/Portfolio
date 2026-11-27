@@ -1,5 +1,6 @@
 /**
- * Upgrade test for 20261127000003_sections_and_portfolio.sql: builds a database
+ * Upgrade tests for 20261127000003_sections_and_portfolio.sql and
+ * 20261127000004_events_roles_photos.sql: builds a database
  * the way a live site looks before the update (old schema, owner edits, uploads,
  * a deleted entry, a published version), applies the update, and checks that it
  * only adds what is missing — and that running it (or the initial import) again
@@ -17,6 +18,7 @@ const migration = (name) => readFileSync(new URL(`../migrations/${name}`, import
 const SCHEMA = migration('20261126000001_cms_schema.sql');
 const IMPORT = migration('20261126000002_import_content.sql');
 const UPDATE = migration('20261127000003_sections_and_portfolio.sql');
+const UPDATE4 = migration('20261127000004_events_roles_photos.sql');
 let db;
 
 async function asOwner(fn) {
@@ -197,18 +199,122 @@ test('the update stays private: clients cannot read the patch log', async () => 
   }
 });
 
-test('on a new project, the import and the update together give the same content', async () => {
+test('on a new project, the import and both updates together give the same content', async () => {
   const fresh = new PGlite();
   await fresh.exec(readFileSync(new URL('./supabase-shim.sql', import.meta.url), 'utf8'));
   await fresh.exec(SCHEMA);
   await fresh.exec(IMPORT);
-  const imported = (await fresh.query(`select collection, id, sort_order, visible, data from public.content_entries order by 1, 3, 2`)).rows;
+  const rowsOf = async () => (await fresh.query(`select collection, id, sort_order, visible, data from public.content_entries order by 1, 3, 2`)).rows;
+  const imported = await rowsOf();
+
+  await assert.rejects(fresh.exec(UPDATE4), /Run supabase\/migrations\/20261127000003/, 'update 4 needs update 3 first');
+  assert.deepEqual(await rowsOf(), imported, 'the refused update changed nothing');
+
   await fresh.exec(UPDATE);
-  const after = (await fresh.query(`select collection, id, sort_order, visible, data from public.content_entries order by 1, 3, 2`)).rows;
-  assert.deepEqual(after, imported, 'the update finds everything already imported');
+  await fresh.exec(UPDATE4);
+  assert.deepEqual(await rowsOf(), imported, 'the updates find everything already imported');
   const site = (await fresh.query('select public.published_site() as s')).rows[0].s.content;
   assert.equal(site.projects[0].id, 'cems');
-  assert.equal(site.projects.at(-1).id, 'personal-portfolio');
-  assert.deepEqual(site.events.map((e) => e.id), ['aws-career-meetup', 'joomla-cms-workshop']);
+  assert.equal(site.projects.at(-1).title, 'Personal Portfolio & Content Dashboard');
+  assert.deepEqual(site.projects.filter((p) => p.featured).map((p) => p.id), ['cems', 'hospital-e-channeling', 'edge-azure-iot', 'personal-portfolio']);
+  assert.deepEqual(site.events.map((e) => e.id), ['yarl-dreamin-25', 'yarlinsight-2', 'aws-meetup-yarl-salesforce-ohana', 'aws-career-meetup', 'joomla-cms-workshop']);
+  assert.deepEqual(site.volunteering.map((v) => v.id), ['ieee-sb-finance-committee', 'jamborieee-2025-finance-volunteer']);
   await fresh.close();
+});
+
+// ------------------------------------------------------------------ update 4
+
+test('update 4 adds events, roles and the featured portfolio project to drafts and keeps every edit', async () => {
+  // The owner kept editing after update 3: a role of their own, a photo on an
+  // event, their own wording on the IEEE role and a renamed skill group.
+  await db.exec(`
+    insert into public.content_entries (collection, id, sort_order, visible, data) values
+      ('volunteering', 'codesprint-x-2025-ambassador', 2, true,
+        '{"type":"ambassador","role":"Event Ambassador","organisation":"CodeSprint X 2025","start":null,"end":null,"description":"Promoted the event.","highlights":[],"url":null,"credentialIds":[]}');
+    update public.content_entries
+      set data = data || '{"cover":{"src":"uploads/events/joomla/photo.webp","alt":"Workshop"},"description":"My own Joomla text"}'
+      where collection = 'events' and id = 'joomla-cms-workshop';
+    update public.content_entries
+      set data = data || '{"description":"Finance committee. I received a Certificate of Appreciation."}'
+      where collection = 'volunteering' and id = 'ieee-sb-finance-committee';
+    update public.content_entries set data = data || '{"title":"Data stores"}' where collection = 'skills' and id = 'databases';
+  `);
+  const before = await entries();
+  const publishedBefore = await published();
+
+  await db.exec(UPDATE4);
+  assert.deepEqual(await published(), publishedBefore, 'nothing public changes until publishing');
+  const after = await entries();
+  const get = (collection, id) => after.find((e) => e.collection === collection && e.id === id);
+  const was = (collection, id) => before.find((e) => e.collection === collection && e.id === id);
+
+  // Projects: the homepage's current three (here: two visible) become featured; the
+  // portfolio project (deleted in the earlier test) is added back, featured, last.
+  const projects = after.filter((e) => e.collection === 'projects');
+  assert.deepEqual(projects.map((p) => [p.id, p.data.featured ?? false]), [['cems', true], ['edge-azure-iot', true], ['personal-portfolio', true]]);
+  assert.equal(get('projects', 'personal-portfolio').data.title, 'Personal Portfolio & Content Dashboard');
+  assert.deepEqual({ ...get('projects', 'cems').data, featured: undefined }, { ...was('projects', 'cems').data, featured: undefined }, 'CEMS otherwise untouched');
+
+  // Events: three new ones first; the existing one keeps its photo, text and certificate.
+  const events = after.filter((e) => e.collection === 'events');
+  assert.deepEqual(events.map((e) => e.id), ['yarl-dreamin-25', 'yarlinsight-2', 'aws-meetup-yarl-salesforce-ohana', 'joomla-cms-workshop']);
+  const joomla = get('events', 'joomla-cms-workshop').data;
+  assert.equal(joomla.cover.src, 'uploads/events/joomla/photo.webp');
+  assert.equal(joomla.description, 'My own Joomla text');
+  assert.deepEqual(joomla.credentialIds, ['joomla-workshop']);
+  assert.equal(joomla.slug, 'joomla-cms-workshop');
+  assert.equal(joomla.type, 'workshop');
+  assert.deepEqual(joomla.gallery, []);
+  const yarl = get('events', 'yarl-dreamin-25').data;
+  assert.equal(yarl.type, 'conference');
+  assert.equal(yarl.location, 'Jaffna');
+  assert.equal(yarl.date, null, 'no invented dates');
+  assert.equal(yarl.url, null, 'no invented links');
+  assert.equal(get('events', 'yarlinsight-2').data.organiser, 'IEEE Student Branch, University of Jaffna');
+
+  // Roles: IEEE gets the new wording and term, keeps dates and certificate; CodeSprint untouched.
+  const roles = after.filter((e) => e.collection === 'volunteering');
+  assert.deepEqual(roles.map((v) => v.id), ['ieee-sb-finance-committee', 'summer-internship', 'codesprint-x-2025-ambassador', 'jamborieee-2025-finance-volunteer']);
+  const ieee = get('volunteering', 'ieee-sb-finance-committee').data;
+  assert.equal(ieee.term, '2025/2026 term');
+  assert.equal(ieee.description, 'Served on the finance committee of the IEEE Student Branch at the University of Jaffna.');
+  assert.ok(!ieee.description.includes('Certificate of Appreciation'));
+  assert.deepEqual(ieee.credentialIds, ['ieee-appreciation'], 'certificate link kept');
+  assert.equal(ieee.start, '2025-04');
+  const codesprint = get('volunteering', 'codesprint-x-2025-ambassador').data;
+  assert.equal(codesprint.role, 'Event Ambassador');
+  assert.equal(codesprint.description, 'Promoted the event.');
+  assert.equal(codesprint.slug, 'codesprint-x-2025-ambassador');
+  const jambor = get('volunteering', 'jamborieee-2025-finance-volunteer').data;
+  assert.equal(jambor.role, 'Event Volunteer (Finance)');
+  assert.equal(jambor.organisation, 'JamborIEEE 2025');
+
+  // Tools and Technologies: short labels, no duplicates, renamed group title kept.
+  const skills = Object.fromEntries(after.filter((e) => e.collection === 'skills').map((g) => [g.id, g.data]));
+  assert.equal(skills.databases.title, 'Data stores', 'a group title you renamed is kept');
+  assert.deepEqual(skills.databases.skills, ['MongoDB', 'MySQL', 'PostgreSQL', 'Supabase', 'Supabase Auth', 'Supabase Storage']);
+  assert.equal(skills.tools.title, 'Tooling & Deployment', 'the original group title is renamed');
+  assert.deepEqual(skills.tools.skills, ['Git', 'GitHub', 'Vite', 'Vercel']);
+  assert.deepEqual(skills.frontend.skills, ['React', 'My own skill', 'Tailwind CSS', 'Responsive Web Design'], 'TypeScript is already listed (as "typescript")');
+  const all = Object.values(skills).flatMap((g) => g.skills.map((x) => x.toLowerCase()));
+  assert.equal(new Set(all).size, all.length, 'no duplicate skills');
+  assert.ok(!all.includes('authentication (supabase auth)') && !all.includes('vercel deployment'));
+
+  // Certificates and Education untouched.
+  for (const c of ['credentials', 'timeline']) {
+    assert.deepEqual(after.filter((e) => e.collection === c), before.filter((e) => e.collection === c));
+  }
+});
+
+test('running update 4 again changes nothing, even after more edits', async () => {
+  await db.exec(`
+    delete from public.content_entries where collection = 'events' and id = 'yarlinsight-2';
+    delete from public.content_entries where collection = 'volunteering' and id = 'jamborieee-2025-finance-volunteer';
+    update public.content_entries set data = data || '{"featured": false}' where collection = 'projects' and id = 'edge-azure-iot';
+  `);
+  const before = json(await entries());
+  await db.exec(UPDATE4);
+  await db.exec(UPDATE);
+  await db.exec(IMPORT);
+  assert.equal(json(await entries()), before, 'deleted entries stay deleted and settings are kept');
 });

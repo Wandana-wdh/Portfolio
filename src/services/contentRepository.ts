@@ -21,8 +21,32 @@ export function normalizeContent(content: SiteContent): SiteContent {
     skills: c.skills ?? [],
     research: c.research ?? [],
     timeline: (c.timeline ?? []).map((t): TimelineEntry => ({ ...t, kind: t.kind === 'education' ? 'education' : 'school' })),
-    volunteering: (c.volunteering ?? []).map((v): VolunteeringEntry => ({ ...v, type: v.type ?? 'volunteering', url: v.url ?? null })),
-    events: (c.events ?? []).map((e): EventEntry => ({ ...e, credentialIds: e.credentialIds ?? [] })),
+    volunteering: (c.volunteering ?? []).map(
+      (v): VolunteeringEntry => ({
+        ...v,
+        slug: v.slug || v.id,
+        type: v.type ?? 'volunteering',
+        term: v.term ?? null,
+        url: v.url ?? null,
+        highlights: v.highlights ?? [],
+        credentialIds: v.credentialIds ?? [],
+        cover: v.cover ?? null,
+        gallery: v.gallery ?? [],
+        recap: v.recap ?? [],
+      }),
+    ),
+    events: (c.events ?? []).map(
+      (e): EventEntry => ({
+        ...e,
+        slug: e.slug || e.id,
+        type: e.type ?? 'other',
+        location: e.location ?? null,
+        recap: e.recap ?? [],
+        cover: e.cover ?? null,
+        gallery: e.gallery ?? [],
+        credentialIds: e.credentialIds ?? [],
+      }),
+    ),
   };
 }
 
@@ -44,6 +68,11 @@ export function createRepository(snapshot: SiteContent): PortfolioRepository {
     getProfile: () => resolve(content.profile),
 
     listProjects: () => resolve(projects),
+    listFeaturedProjects: () => {
+      const flagged = projects.filter((p) => p.featured === true);
+      // Before any project is marked as featured, the first three are shown.
+      return resolve(flagged.length > 0 ? flagged : projects.slice(0, 3));
+    },
     getProject: (slug) => resolve(projects.find((p) => p.slug === slug) ?? null),
 
     listCredentials: () =>
@@ -53,6 +82,14 @@ export function createRepository(snapshot: SiteContent): PortfolioRepository {
     listTimeline: () => resolve(shown(content.timeline).map((t) => ({ ...t, credentials: pick(t.credentialIds) }))),
     listVolunteering: () => resolve(shown(content.volunteering).map((v) => ({ ...v, credentials: pick(v.credentialIds) }))),
     listEvents: () => resolve(shown(content.events).map((e) => ({ ...e, credentials: pick(e.credentialIds) }))),
+    getEvent: (slug) => {
+      const e = shown(content.events).find((x) => x.slug === slug);
+      return resolve(e ? { ...e, credentials: pick(e.credentialIds) } : null);
+    },
+    getVolunteering: (slug) => {
+      const v = shown(content.volunteering).find((x) => x.slug === slug);
+      return resolve(v ? { ...v, credentials: pick(v.credentialIds) } : null);
+    },
 
     listSkillGroups: () => resolve(shown(content.skills)),
 

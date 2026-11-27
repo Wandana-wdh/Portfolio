@@ -81,7 +81,7 @@ export interface Profile {
   cvUrl: string | null;
   email: string;
   socials: SocialLink[];
-  /** Short labels shown in the strip under the hero. */
+  /** No longer shown on the site (the strip under the hero was removed); kept for older data. */
   focusAreas: string[];
   about: AboutContent;
 }
@@ -99,6 +99,8 @@ export interface ProjectRepository {
 export interface Project extends Listable {
   /** URL segment: /projects/<slug>. Changing it changes the page URL. */
   slug: string;
+  /** Show in Featured Projects on the homepage (in list order). */
+  featured?: boolean;
   title: string;
   /** Optional short name used in compact links, e.g. "CEMS". */
   shortTitle?: string;
@@ -188,9 +190,14 @@ export type ExperienceType = 'volunteering' | 'ambassador' | 'student-role' | 'i
 
 /** Volunteering & Experience — roles where you contributed. */
 export interface VolunteeringEntry extends Listable {
+  /** URL segment: /experience/<slug>. */
+  slug: string;
   type: ExperienceType;
   role: string;
+  /** Organisation or event. */
   organisation: string;
+  /** Shown instead of the dates when set, e.g. "2025/2026 term". */
+  term: string | null;
   start: string | null;
   end: string | null;
   /** Only add duties or outcomes supported by your own materials. */
@@ -200,15 +207,34 @@ export interface VolunteeringEntry extends Listable {
   url: string | null;
   /** Ids of credentials attached to this role (e.g. a certificate of appreciation). */
   credentialIds: string[];
+  /** Card and page photo (optional). */
+  cover: ImageAsset | null;
+  /** Photos on the role's page (zero, one or many). */
+  gallery: GalleryImage[];
+  /** Optional longer write-up on the role's page (paragraphs). */
+  recap: string[];
 }
+
+export type EventType = 'conference' | 'bootcamp' | 'meetup' | 'workshop' | 'hackathon' | 'webinar' | 'competition' | 'other';
 
 /** Events & Participation — events, meetups and workshops you attended. */
 export interface EventEntry extends Listable {
+  /** URL segment: /events/<slug>. */
+  slug: string;
   /** Event name. */
   title: string;
+  type: EventType;
   organiser: string | null;
+  location: string | null;
   date: string | null;
+  /** Brief description (card and page). */
   description: string | null;
+  /** Optional longer recap on the event's page (paragraphs). */
+  recap: string[];
+  /** Card and page photo (optional). */
+  cover: ImageAsset | null;
+  /** Photos on the event's page (zero, one or many). */
+  gallery: GalleryImage[];
   /** Optional event page. */
   url: string | null;
   /** Ids of credentials attached (e.g. a participation certificate). */
