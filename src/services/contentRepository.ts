@@ -1,4 +1,4 @@
-import type { EventEntry, Listable, SiteContent, TimelineEntry, VolunteeringEntry } from '@/types';
+import type { EventEntry, Listable, Project, SiteContent, TimelineEntry, VolunteeringEntry } from '@/types';
 import type { PortfolioRepository, ProjectRef } from './portfolioRepository';
 
 /** Returns a copy so callers can never mutate the source data. */
@@ -15,12 +15,12 @@ export function normalizeContent(content: SiteContent): SiteContent {
   const c = content as Partial<SiteContent> & Pick<SiteContent, 'profile'>;
   return {
     ...content,
-    projects: c.projects ?? [],
+    projects: (c.projects ?? []).map((p): Project => ({ ...p, status: p.status ?? null, presentation: p.presentation?.href ? p.presentation : null })),
     credentials: c.credentials ?? [],
     articles: c.articles ?? [],
     skills: c.skills ?? [],
-    research: c.research ?? [],
-    timeline: (c.timeline ?? []).map((t): TimelineEntry => ({ ...t, kind: t.kind === 'education' ? 'education' : 'school' })),
+    research: (c.research ?? []).map((r) => ({ ...r, status: r.status ?? null, cover: r.cover ?? null })),
+    timeline: (c.timeline ?? []).map((t): TimelineEntry => ({ ...t, kind: t.kind === 'education' ? 'education' : 'school', status: t.status ?? null })),
     volunteering: (c.volunteering ?? []).map(
       (v): VolunteeringEntry => ({
         ...v,

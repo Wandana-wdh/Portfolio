@@ -92,6 +92,11 @@ test('import: drafts and the first published version preserve order, URLs and vi
   assert.deepEqual(c.volunteering.map((v) => [v.id, v.term]), [['ieee-sb-finance-committee', '2025/2026 term'], ['jamborieee-2025-finance-volunteer', null]]);
   assert.deepEqual(c.projects.filter((p) => p.featured).map((p) => p.id), ['cems', 'hospital-e-channeling', 'edge-azure-iot', 'personal-portfolio']);
   assert.equal(c.projects[3].title, 'Personal Portfolio & Content Dashboard');
+  assert.deepEqual(c.projects.map((p) => p.status ?? null), ['completed', null, null, null], 'only CEMS has a project status');
+  assert.deepEqual(c.timeline.map((t) => t.status), ['in-progress', 'completed', 'completed', 'completed']);
+  assert.equal(c.research[0].status, 'early-stage');
+  const mimes = (await anon((tx) => rows(tx, 'select allowed_mime_types as m from storage.buckets'))).map((r) => r.m);
+  assert.ok(mimes.length === 2 && mimes.every((m) => m.includes('application/vnd.openxmlformats-officedocument.presentationml.presentation')), 'both buckets accept .pptx');
   assert.equal(c.profile.about.developmentExperience, undefined);
   const allSkills = c.skills.flatMap((g) => g.skills.map((x) => x.toLowerCase()));
   assert.equal(new Set(allSkills).size, allSkills.length, 'no duplicate skills');

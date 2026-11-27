@@ -20,6 +20,7 @@ In the project, open **SQL Editor → New query**, then run these files from thi
 2. `supabase/migrations/20261126000002_import_content.sql` — imports the portfolio (same URLs, project order, certificate order and visibility) and publishes it as version 1. On a project that already has content it does nothing.
 3. `supabase/migrations/20261127000003_sections_and_portfolio.sql` — Education, Volunteering & Experience and Events & Participation (on a new project it only updates the schema, because step 2 already imported everything).
 4. `supabase/migrations/20261127000004_events_roles_photos.sql` — event and role pages with photos, featured projects (on a new project it changes nothing, because step 2 already imported everything).
+5. `supabase/migrations/20261127000005_status_research_covers_pptx.sql` — lets the storage buckets accept PowerPoint (.pptx) files (on a new project only that, because step 1 already allows them and step 2 already set the statuses).
 
 Each should finish with “Success. No rows returned”. Running them again is safe.
 
@@ -99,9 +100,31 @@ Some code updates add a new file to `supabase/migrations/`. Run **only the new f
 
 In the SQL Editor run `select * from public.content_patches;`
 
-- *relation "public.content_patches" does not exist* → run update 3, then update 4.
-- Only `2026-11-27-sections` → run update 4.
-- Both `2026-11-27-sections` and `2026-11-27-events-roles-photos` → nothing to run.
+- *relation "public.content_patches" does not exist* → run updates 3, 4 and 5.
+- Only `2026-11-27-sections` → run updates 4 and 5.
+- `2026-11-27-sections` and `2026-11-27-events-roles-photos` → run update 5.
+- All three, including `2026-11-27-status` → nothing to run.
+
+### Update 5 (27 Nov 2026): `20261127000005_status_research_covers_pptx.sql`
+
+**Required before you upload a project presentation (.pptx).** Until it runs, Supabase refuses .pptx uploads with “This file type isn’t allowed”. Statuses and research covers work without it, but it also sets your first statuses.
+
+1. In Supabase, open **SQL Editor → New query**, paste the whole of `supabase/migrations/20261127000005_status_research_covers_pptx.sql`, and click **Run**. The messages show *Content update 2026-11-27-status applied to your drafts*.
+2. Push the code to GitHub and wait for the Vercel deployment. You can do this before or after step 1.
+3. Open `/admin` → **Preview** → check the badges → **Publish**.
+
+What it does:
+
+- **Storage:** both buckets (`drafts` and `site`) also accept PowerPoint (.pptx) files. The size limit (10 MB), privacy and other allowed types are unchanged.
+- **Statuses, only on drafts and only where none is set yet:**
+  - CEMS → *Completed*.
+  - Computer Science at the University of Jaffna → *In Progress*.
+  - GCE A/L, GCE O/L and the Grade 5 Scholarship Examination → *Completed*.
+  - ZK-Mangrove → *Early-stage* (it already is).
+  - Every other project, Education entry and research entry stays unset, so no badge appears until you choose a status in `/admin`.
+- No changes to order, uploads, text or visibility. Research covers and presentations need no other database change.
+
+It is additive and safe to run again: the second run changes nothing.
 
 ### Update 4 (27 Nov 2026): `20261127000004_events_roles_photos.sql`
 
@@ -153,7 +176,7 @@ Running it a second time changes nothing (it records itself in `public.content_p
 - **One certificate, many places.** Attach a certificate to projects, Education, Volunteering & Experience or Events & Participation from those editors. Tick an existing one, or use **New certificate with file** to upload a PDF or image and attach it in one step. It is one record, so editing or replacing it in **Certificates** updates every place. Turn off *List on the Achievements page* for certificates that should only appear where they are attached (e.g. school certificates under Education).
 - **Certificate buttons.** Education shows a *View certificate* button only when the attached certificate has a file. Event and role pages link to the file, or to the certificate on the Achievements page when there is no file.
 - **Replacing a file** uploads it to a new location first; your current file stays in place if the upload fails, and is removed only after you save.
-- **Uploads**: PDF, JPG, PNG, WebP, GIF or AVIF, up to 10 MB each. Remove personal details (index/ID numbers, addresses) from certificates before uploading.
+- **Uploads**: PDF, JPG, PNG, WebP, GIF or AVIF (and PowerPoint .pptx for project presentations), up to 10 MB each. Remove personal details (index/ID numbers, addresses) from certificates before uploading.
 
 ## Security summary
 
@@ -173,6 +196,7 @@ Running it a second time changes nothing (it records itself in `public.content_p
 | Publishing reports files that couldn’t be copied | Retry **Publish**; nothing changes on the public site until it succeeds. |
 | Changes don’t appear on the site | Did you **Publish**? Saving alone only updates drafts (check the status in the top bar). |
 | “This section needs the latest database update” | Run the newest file in `supabase/migrations` — see [Updating a live site](#updating-a-live-site). |
+| A .pptx upload fails with “This file type isn’t allowed” | Run update 5 (`20261127000005_status_research_covers_pptx.sql`) — see [Update 5](#update-5-27-nov-2026-20261127000005_status_research_covers_pptxsql). |
 
 ## Tests in this repository
 

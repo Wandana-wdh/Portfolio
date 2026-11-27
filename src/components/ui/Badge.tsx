@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { CheckCircle2, Clock } from 'lucide-react';
+import { statusBadge, type AnyStatus } from '@/lib/labels';
 import { cn } from '@/lib/utils';
 
 type BadgeTone = 'neutral' | 'accent' | 'outline' | 'warning' | 'overlay';
@@ -56,6 +58,36 @@ export function StatusPill({ label, active = true }: { label: string; active?: b
         <span className="relative inline-flex size-2 rounded-full bg-accent" />
       </span>
       {label}
+    </span>
+  );
+}
+
+/**
+ * Completed (check-circle) or In Progress / Early-stage (clock). The text is
+ * always shown, so the status never depends on colour alone. Renders nothing
+ * when the status is unset.
+ */
+export function StatusBadge({ status, overlay = false, className }: { status: AnyStatus | null | undefined; overlay?: boolean; className?: string }) {
+  const info = status ? statusBadge[status] : undefined;
+  if (!info) return null;
+  const Icon = info.done ? CheckCircle2 : Clock;
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium leading-none whitespace-nowrap',
+        overlay
+          ? 'bg-navy/75 text-offwhite ring-1 ring-white/15 backdrop-blur'
+          : info.done
+            ? 'bg-accent-soft text-accent ring-1 ring-accent/25'
+            : 'bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/30 dark:text-amber-300',
+        className,
+      )}
+    >
+      <Icon className={cn('size-3.5 shrink-0', overlay && (info.done ? 'text-emerald-300' : 'text-amber-300'))} aria-hidden />
+      <span>
+        <span className="sr-only">Status: </span>
+        {info.label}
+      </span>
     </span>
   );
 }

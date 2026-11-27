@@ -19,6 +19,8 @@ const SCHEMA = migration('20261126000001_cms_schema.sql');
 const IMPORT = migration('20261126000002_import_content.sql');
 const UPDATE = migration('20261127000003_sections_and_portfolio.sql');
 const UPDATE4 = migration('20261127000004_events_roles_photos.sql');
+const UPDATE5 = migration('20261127000005_status_research_covers_pptx.sql');
+const PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 let db;
 
 async function asOwner(fn) {
@@ -212,6 +214,7 @@ test('on a new project, the import and both updates together give the same conte
 
   await fresh.exec(UPDATE);
   await fresh.exec(UPDATE4);
+  await fresh.exec(UPDATE5);
   assert.deepEqual(await rowsOf(), imported, 'the updates find everything already imported');
   const site = (await fresh.query('select public.published_site() as s')).rows[0].s.content;
   assert.equal(site.projects[0].id, 'cems');
@@ -317,4 +320,49 @@ test('running update 4 again changes nothing, even after more edits', async () =
   await db.exec(UPDATE);
   await db.exec(IMPORT);
   assert.equal(json(await entries()), before, 'deleted entries stay deleted and settings are kept');
+});
+
+// ------------------------------------------------------------------ update 5
+
+test('update 5 sets the first statuses on drafts only, allows .pptx, and keeps every edit', async () => {
+  // A status the owner already chose, and a research entry like the live one.
+  await db.exec(`
+    update public.content_entries set data = data || '{"status": "completed"}' where collection = 'timeline' and id = 'uoj-computer-science';
+    insert into public.content_entries (collection, id, sort_order, visible, data) values
+      ('research', 'zk-mangrove', 0, true, '{"slug":"zk-mangrove","title":"ZK-Mangrove","summary":"x","status":"early-stage","cover":null}'),
+      ('research', 'other-study', 1, true, '{"slug":"other-study","title":"Other study","summary":"y","status":null}');
+  `);
+  const buckets = async () => (await db.query(`select id, allowed_mime_types as m from storage.buckets order by id`)).rows;
+  // The live buckets were created before .pptx was allowed.
+  await db.exec(`update storage.buckets set allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf']`);
+  assert.ok((await buckets()).every((b) => !b.m.includes(PPTX)), 'before: no .pptx');
+  const before = await entries();
+  const publishedBefore = await published();
+
+  await db.exec(UPDATE5);
+  assert.deepEqual(await published(), publishedBefore, 'nothing public changes until publishing');
+  const after = await entries();
+  const status = (c, id) => after.find((e) => e.collection === c && e.id === id)?.data.status ?? null;
+
+  assert.equal(status('projects', 'cems'), 'completed');
+  assert.equal(status('projects', 'edge-azure-iot'), null, 'unknown statuses stay unset');
+  assert.equal(status('projects', 'personal-portfolio'), null);
+  assert.equal(status('timeline', 'uoj-computer-science'), 'completed', 'a status the owner chose is kept');
+  assert.equal(status('timeline', 'gce-advanced-level'), 'completed', 'school levels are completed');
+  assert.equal(status('research', 'zk-mangrove'), 'early-stage');
+  assert.equal(status('research', 'other-study'), null);
+
+  // Only the status key changed; order, uploads and everything else are kept.
+  const strip = (rows) => rows.map((e) => ({ ...e, data: { ...e.data, status: undefined } }));
+  assert.deepEqual(JSON.parse(JSON.stringify(strip(after))), JSON.parse(JSON.stringify(strip(before))));
+
+  const b = await buckets();
+  assert.ok(b.every((x) => x.m.includes(PPTX)), '.pptx allowed in both buckets');
+  assert.ok(b.every((x) => x.m.includes('application/pdf') && x.m.includes('image/png')), 'existing types kept');
+
+  const again = json(await entries());
+  await db.exec(UPDATE5);
+  await db.exec(SCHEMA);
+  assert.equal(json(await entries()), again, 'running it again changes nothing');
+  assert.equal((await buckets()).every((x) => x.m.filter((t) => t === PPTX).length === 1), true, 'no duplicate .pptx type');
 });

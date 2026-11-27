@@ -3,7 +3,7 @@ import type { TimelineKind } from '@/types';
 import type { TimelineView } from '@/services';
 import { timelineKindLabel } from '@/lib/labels';
 import { cn, formatRange } from '@/lib/utils';
-import { TechTag } from '@/components/ui/Badge';
+import { StatusBadge, TechTag } from '@/components/ui/Badge';
 import { Reveal } from '@/components/ui/Reveal';
 import { CredentialLinks } from './CredentialLinks';
 
@@ -38,7 +38,10 @@ export function Timeline({ entries }: { entries: TimelineView[] }) {
 
             <Reveal className={cn('pb-6', last && 'pb-0')} delay={Math.min(i * 0.05, 0.2)}>
               <div className="rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong sm:p-6">
-                <span className="font-mono text-[0.7rem] uppercase tracking-widest text-accent">{timelineKindLabel[entry.kind] ?? 'School'}</span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-mono text-[0.7rem] uppercase tracking-widest text-accent">{timelineKindLabel[entry.kind] ?? 'School'}</span>
+                  <StatusBadge status={entry.status} />
+                </div>
                 <h3 className="mt-2 text-lg font-semibold">{entry.title}</h3>
                 {meta && <p className="mt-1 text-sm text-fg-muted">{meta}</p>}
                 {range && <p className="mt-1 font-mono text-xs text-fg-subtle md:hidden">{range}</p>}

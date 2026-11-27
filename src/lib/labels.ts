@@ -1,11 +1,27 @@
-import type { ArtworkVariant, CredentialType, EventType, ExperienceType, ResearchStatus, TimelineKind } from '@/types';
+import type { ArtworkVariant, CredentialType, EventType, ExperienceType, ResearchStatus, TimelineKind, WorkStatus } from '@/types';
 import { formatRange } from './utils';
 
 export const researchStatusLabel: Record<ResearchStatus, string> = {
-  'early-stage': 'Early-stage research',
-  ongoing: 'Ongoing research',
-  completed: 'Completed research',
-  published: 'Published research',
+  'early-stage': 'Early-stage',
+  ongoing: 'In Progress',
+  completed: 'Completed',
+  published: 'Published',
+};
+
+export const workStatusLabel: Record<WorkStatus, string> = {
+  completed: 'Completed',
+  'in-progress': 'In Progress',
+};
+
+/** Any status a badge can show. Finished ones get a check icon, the rest a clock. */
+export type AnyStatus = WorkStatus | ResearchStatus;
+
+export const statusBadge: Record<AnyStatus, { label: string; done: boolean }> = {
+  completed: { label: 'Completed', done: true },
+  'in-progress': { label: 'In Progress', done: false },
+  'early-stage': { label: 'Early-stage', done: false },
+  ongoing: { label: 'In Progress', done: false },
+  published: { label: 'Published', done: true },
 };
 
 export const credentialTypeLabel: Record<CredentialType, string> = {
@@ -54,8 +70,6 @@ export const experienceTypeLabel: Record<ExperienceType, string> = {
   work: 'Work experience',
 };
 
-/** Early-stage and ongoing research show a "live" status dot. */
-export const isActiveResearch = (status: ResearchStatus) => status === 'early-stage' || status === 'ongoing';
 
 export const eventTypeLabel: Record<EventType, string> = {
   conference: 'Conference',

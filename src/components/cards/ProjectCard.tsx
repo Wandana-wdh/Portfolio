@@ -1,16 +1,19 @@
 import { ArrowRight, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Project } from '@/types';
-import { Badge, TechTag } from '@/components/ui/Badge';
+import { statusBadge } from '@/lib/labels';
+import { Badge, StatusBadge, TechTag } from '@/components/ui/Badge';
 import { Media } from '@/components/ui/CoverArt';
 import { GitHubIcon } from '@/components/ui/SocialIcon';
 
-const MAX_TAGS = 3;
+const MAX_TAGS = 2;
 
 /**
- * Project card. Fixed-ratio cover, clamped title/summary and a single tag row
- * keep every card in a grid row the same size, with actions aligned at the bottom.
+ * Compact project card: a short 2:1 cover, a two-line title, a two-line summary
+ * and one row of tags. Fixed minimum heights keep every card in a grid the same
+ * size, and the action row sits at the bottom so it lines up across a row.
  * Place it in a grid cell that stretches (the card fills its cell with h-full).
+ * The full description, gallery and downloads are on the project page.
  */
 export function ProjectCard({ project, headingLevel = 'h3' }: { project: Project; headingLevel?: 'h2' | 'h3' }) {
   const Heading = headingLevel;
@@ -20,33 +23,38 @@ export function ProjectCard({ project, headingLevel = 'h3' }: { project: Project
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-card transition-[box-shadow,border-color,transform] duration-300 ease-out-soft hover:-translate-y-1 hover:border-line-strong hover:shadow-card-hover">
-      <Link to={href} tabIndex={-1} aria-hidden className="relative block aspect-[16/10] shrink-0 overflow-hidden">
+      <Link to={href} tabIndex={-1} aria-hidden className="relative block aspect-[2/1] shrink-0 overflow-hidden">
         <Media
           image={project.cover}
           artwork={project.artwork}
           seed={project.slug}
           className="absolute inset-0 transition-transform duration-500 ease-out-soft group-hover:scale-[1.03]"
         />
-        <span className="absolute top-4 left-4 flex gap-2">
-          <Badge tone="overlay">{project.category}</Badge>
-          {project.team && (
-            <Badge tone="overlay">
-              <Users className="size-3" aria-hidden />
-              Team
-            </Badge>
-          )}
+        <span className="absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-1.5">
+          <span className="flex flex-wrap gap-1.5">
+            <Badge tone="overlay">{project.category}</Badge>
+            {project.team && (
+              <Badge tone="overlay">
+                <Users className="size-3" aria-hidden />
+                Team
+              </Badge>
+            )}
+          </span>
+          <StatusBadge status={project.status} overlay />
         </span>
       </Link>
 
-      <div className="flex flex-1 flex-col p-6">
-        <Heading className="line-clamp-2 min-h-[2lh] text-xl font-semibold leading-snug">
+      <div className="flex flex-1 flex-col p-5">
+        <Heading className="line-clamp-2 min-h-[2lh] text-lg font-semibold leading-snug">
           <Link to={href} className="transition-colors hover:text-accent">
             {project.title}
           </Link>
         </Heading>
-        <p className="mt-3 line-clamp-3 min-h-[3lh] text-sm leading-relaxed text-fg-muted">{project.summary}</p>
+        {/* The badge on the cover is hidden from screen readers with the rest of the image link. */}
+        {project.status && <p className="sr-only">Status: {statusBadge[project.status].label}</p>}
+        <p className="mt-2 line-clamp-2 min-h-[2lh] text-sm leading-relaxed text-fg-muted">{project.summary}</p>
 
-        <ul className="mt-5 flex min-h-[3.25rem] flex-wrap content-start gap-1.5" aria-label="Technologies">
+        <ul className="mt-4 flex min-h-[1.5rem] flex-wrap content-start gap-1.5" aria-label="Technologies">
           {project.tech.slice(0, MAX_TAGS).map((t) => (
             <li key={t}>
               <TechTag>{t}</TechTag>
@@ -62,7 +70,8 @@ export function ProjectCard({ project, headingLevel = 'h3' }: { project: Project
           )}
         </ul>
 
-        <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+        {/* Fixed-height action row so "View Details" lines up whether or not a GitHub button is present. */}
+        <div className="mt-auto flex h-13 items-center justify-between gap-4 pt-4">
           <Link
             to={href}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-accent"

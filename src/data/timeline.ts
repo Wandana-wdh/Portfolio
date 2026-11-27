@@ -9,6 +9,7 @@ export const timeline: TimelineEntry[] = [
   {
     id: 'uoj-computer-science',
     visible: true,
+    status: 'in-progress',
     kind: 'education',
     title: 'Computer Science',
     organisation: 'University of Jaffna',
@@ -22,6 +23,7 @@ export const timeline: TimelineEntry[] = [
   {
     id: 'gce-advanced-level',
     visible: true,
+    status: 'completed',
     kind: 'school',
     title: 'GCE Advanced Level (A/L)',
     organisation: null,
@@ -35,6 +37,7 @@ export const timeline: TimelineEntry[] = [
   {
     id: 'gce-ordinary-level',
     visible: true,
+    status: 'completed',
     kind: 'school',
     title: 'GCE Ordinary Level (O/L)',
     organisation: null,
@@ -48,6 +51,7 @@ export const timeline: TimelineEntry[] = [
   {
     id: 'grade-5-scholarship',
     visible: true,
+    status: 'completed',
     kind: 'school',
     title: 'Grade 5 Scholarship Examination',
     organisation: null,

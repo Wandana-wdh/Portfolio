@@ -9,7 +9,7 @@ import type {
   TimelineEntry,
   VolunteeringEntry,
 } from '@/types';
-import { credentialTypeLabel, eventTypeLabel, experienceTypeLabel, researchStatusLabel, roleWhen, timelineKindLabel } from '@/lib/labels';
+import { credentialTypeLabel, eventTypeLabel, experienceTypeLabel, researchStatusLabel, roleWhen, timelineKindLabel, workStatusLabel } from '@/lib/labels';
 import { formatDate, formatRange } from '@/lib/utils';
 
 /** Entry data as stored in the database (id/visible live in their own columns). */
@@ -36,12 +36,19 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     hasSlug: true,
     describe: (d) => {
       const p = d as EntryData<Project>;
-      return { title: p.title, subtitle: [p.featured ? 'Featured' : null, p.category, p.team ? 'Team project' : null].filter(Boolean).join(' · ') };
+      return {
+        title: p.title,
+        subtitle: [p.featured ? 'Featured' : null, p.status ? workStatusLabel[p.status] : null, p.category, p.team ? 'Team project' : null, p.presentation ? 'Presentation' : null]
+          .filter(Boolean)
+          .join(' · '),
+      };
     },
     publicPath: (d) => `/projects/${(d as EntryData<Project>).slug}`,
     create: (): EntryData<Project> => ({
       slug: '',
       featured: false,
+      status: null,
+      presentation: null,
       title: '',
       summary: '',
       description: [],
@@ -96,7 +103,7 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
       const t = d as EntryData<TimelineEntry>;
       return {
         title: t.title,
-        subtitle: [timelineKindLabel[t.kind], t.organisation, formatRange(t.start, t.end), t.credentialIds?.length ? 'Certificate attached' : null]
+        subtitle: [timelineKindLabel[t.kind], t.status ? workStatusLabel[t.status] : null, t.organisation, formatRange(t.start, t.end), t.credentialIds?.length ? 'Certificate attached' : null]
           .filter(Boolean)
           .join(' · '),
       };
@@ -104,6 +111,7 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     publicPath: () => '/about#education',
     create: (): EntryData<TimelineEntry> => ({
       kind: 'school',
+      status: null,
       title: '',
       organisation: null,
       location: null,
@@ -207,7 +215,7 @@ export const collections: { [K in ContentCollection]: CollectionConfig } = {
     hasSlug: true,
     describe: (d) => {
       const r = d as EntryData<ResearchProject>;
-      return { title: r.title, subtitle: researchStatusLabel[r.status] };
+      return { title: r.title, subtitle: [r.status ? researchStatusLabel[r.status] : null, r.cover ? 'Cover photo' : null].filter(Boolean).join(' · ') };
     },
     publicPath: (d) => `/research/${(d as EntryData<ResearchProject>).slug}`,
     create: (): EntryData<ResearchProject> => ({

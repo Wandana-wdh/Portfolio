@@ -54,7 +54,9 @@ Sign in at `https://wandana.vercel.app/admin`. Every list works the same way: **
 | --- | --- |
 | Hero, About text, portrait, links, CV | **Profile** |
 | **Featured Projects** (homepage) | **Projects** → open a project → tick **Featured on the homepage**. Featured projects appear on the homepage in the order of the Projects list (keep CEMS at the top). All projects always appear on the Projects page. |
-| Project details, cover, screenshots, links | **Projects** → open the project |
+| Project details, cover, screenshots, links, presentation (.pptx) | **Projects** → open the project |
+| **Status** badges (Completed / In Progress / Early-stage) | **Projects**, **Education** or **Research** → open the entry → **Status**. Choose *Not set* to hide the badge. |
+| Research cover photo | **Research** → open the entry → **Cover photo (optional)** |
 | **Tools and Technologies** | **Tools & Technologies** → open a group (e.g. *Frontend Development*) and add, remove or reorder skills. Groups can be added, hidden and reordered too. |
 | Education | **Education** |
 | Volunteering & Experience | **Volunteering & Experience** |
@@ -78,13 +80,39 @@ Sign in at `https://wandana.vercel.app/admin`. Every list works the same way: **
 4. Add a **Contribution summary** (card), and optionally a longer write-up, a link, certificates and photos.
 5. **Save** → **Preview** → **Publish**.
 
+### Set a status
+
+Each project, Education entry and research entry can show a small status badge. A check-circle means **Completed**. A clock means **In Progress** (or **Early-stage**, for research). The text is always shown next to the icon.
+
+1. Open the entry in **Projects**, **Education** or **Research**.
+2. Choose a **Status**, or **Not set (no badge)** to hide it.
+3. **Save** → **Preview** → **Publish**.
+
+The badge appears on project cards (homepage and Projects page), project pages, Education entries and Undergraduate Research.
+
+### Add a research cover photo
+
+1. **Research** → open the entry → **Cover photo (optional)** → **Upload image**.
+2. Fill in **Alt text** (required: what the photo shows). **Upload image** again to replace the photo, and **Remove** to take it off.
+3. **Save** → **Preview** → **Publish**.
+
+The cover appears beside the entry on the Research page and at the top of its page. Without a cover, the text uses the full width.
+
+### Upload a project presentation (.pptx)
+
+1. **Projects** → open the project (e.g. CEMS) → **Presentation (optional)** → **Upload .pptx**.
+2. Only PowerPoint **.pptx** files up to 10 MB are accepted; anything else shows a clear error. Your current file stays in place if a replacement upload fails.
+3. **Link text** is the button label. It starts as *Download Project Presentation*; change it if you like.
+4. **Save** → **Preview** (the button works for you with the draft file) → **Publish**. The **Download** button then appears on the project page for every visitor. Cards stay compact; the button is only on the project page.
+5. To replace the file, use **Replace file**. To remove it, use **Remove**, then save and publish. After publishing, the old file is no longer available to download.
+
 ### Upload, replace and reorder photos
 
-Projects, events and roles all use the same photo fields:
+Projects, events, roles and research use the same photo fields:
 
 - **Cover photo** — **Upload image**. It appears on the card and at the top of the page. Upload a new one to replace it; if an upload fails, your current photo stays.
 - **Gallery** — **Add photos** (you can select several at once). Give each one **Alt text** (required: what the photo shows) and an optional **Caption**. Use **↑ ↓** on a photo to reorder it and **Remove** to delete it.
-- Uploads show a progress bar. JPG, PNG, WebP, GIF or AVIF up to 10 MB (certificates may also be PDFs).
+- Uploads show a progress bar. JPG, PNG, WebP, GIF or AVIF up to 10 MB (certificates may also be PDFs, and project presentations are .pptx).
 - Without a cover photo the card shows a generated graphic, so all cards stay the same size, and a page without gallery photos simply has no Photos section.
 - Photos stay private until you publish.
 

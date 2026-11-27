@@ -5,6 +5,7 @@ import { FormSection, SelectField, StringListField, TextAreaField, TextField } f
 import { cleanList, orNull } from '../lib/listUtils';
 import type { EntryData } from '../lib/collections';
 import { validator } from '../lib/validation';
+import { statusHint, workStatusOptions } from '../lib/statusOptions';
 import type { FormDefinition, FormProps } from './types';
 
 type T = EntryData<TimelineEntry>;
@@ -31,6 +32,7 @@ function EducationFormFields({ data, update, errors, credentials }: FormProps<T>
           <TextField label="Start (optional)" value={data.start} onChange={(start) => update({ start })} error={errors.start} placeholder="2023" hint="YYYY or YYYY-MM. Leave empty if unsure." />
           <TextField label="End (optional)" value={data.end} onChange={(end) => update({ end })} error={errors.end} hint="With a start date, leave empty for “Present”." />
         </div>
+        <SelectField label="Status" value={data.status ?? ''} onChange={(status) => update({ status: status || null })} options={workStatusOptions} hint={statusHint} />
         <TextAreaField label="Short description (optional)" rows={3} value={data.description} onChange={(description) => update({ description })} />
         <StringListField label="Highlights (optional)" values={data.highlights} onChange={(highlights) => update({ highlights })} itemLabel="highlight" addLabel="Add highlight" />
       </FormSection>
@@ -63,6 +65,7 @@ export const timelineForm: FormDefinition<T> = {
   prepare: (d) => ({
     ...d,
     kind: d.kind === 'education' ? 'education' : 'school',
+    status: d.status || null,
     title: d.title.trim(),
     organisation: orNull(d.organisation),
     location: orNull(d.location),

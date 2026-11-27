@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { ExternalLink, FileText, ImagePlus, Link2, Trash2, Upload, X } from 'lucide-react';
+import { ExternalLink, FileText, ImagePlus, Link2, Presentation, Trash2, Upload, X } from 'lucide-react';
 import type { Attachment, GalleryImage, ImageAsset } from '@/types';
 import { isUploadPath } from '@/lib/supabaseConfig';
 import { cn } from '@/lib/utils';
-import { ACCEPT, uploadDraftFile, validateFile } from '../lib/api';
+import { ACCEPT, checkFileContents, uploadDraftFile, validateFile } from '../lib/api';
 import { move } from '../lib/listUtils';
 import { useFileUrl } from '../lib/useFileUrl';
 import { IconButton, RowControls, TextField } from './fields';
@@ -43,7 +43,7 @@ function useUploader(kinds: Kind[], folder: string, onUploaded: (path: string) =
   useEffect(() => () => abortRef.current?.abort(), []);
 
   async function start(file: File): Promise<{ path: string; size: { width: number; height: number } | null } | null> {
-    const problem = validateFile(file, kinds);
+    const problem = validateFile(file, kinds) ?? (await checkFileContents(file));
     if (problem) {
       setState({ progress: null, error: problem, fileName: file.name, localUrl: null });
       return null;
@@ -130,7 +130,7 @@ function PickButton({ accept, multiple, onFiles, children, disabled }: { accept:
   );
 }
 
-const acceptFor = (kinds: Kind[]) => kinds.flatMap((k) => ACCEPT[k]).join(',');
+const acceptFor = (kinds: Kind[]) => kinds.flatMap((k): readonly string[] => (k === 'pptx' ? ['.pptx', ...ACCEPT.pptx] : ACCEPT[k])).join(',');
 
 // ------------------------------------------------------------------ image
 
@@ -269,6 +269,8 @@ export function DocumentField({
   const url = useFileUrl(value?.href);
   const uploading = uploader.state.progress !== null;
   const fileName = value?.href ? decodeURIComponent(value.href.split('/').pop() ?? '').replace(/^[0-9a-f-]{36}-/, '') : null;
+  const isPresentation = /\.pptx$/i.test(value?.href ?? '');
+  const FileIcon = isPresentation ? Presentation : FileText;
 
   async function onFiles([file]: File[]) {
     const result = await uploader.start(file);
@@ -283,11 +285,11 @@ export function DocumentField({
       {hint && <p className="-mt-2 text-xs text-fg-subtle">{hint}</p>}
       {value ? (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface-2/60 px-4 py-3">
-          <FileText className="size-5 shrink-0 text-accent" aria-hidden />
+          <FileIcon className="size-5 shrink-0 text-accent" aria-hidden />
           <span className="min-w-0 flex-1 truncate text-sm">{fileName}</span>
           {url && (
             <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline">
-              Preview
+              {isPresentation ? 'Download' : 'Preview'}
               <ExternalLink className="size-3.5" aria-hidden />
               <span className="sr-only">{fileName} (opens in a new tab)</span>
             </a>
@@ -301,7 +303,7 @@ export function DocumentField({
       <div className="flex flex-wrap gap-2">
         <PickButton accept={acceptFor(kinds)} onFiles={onFiles} disabled={uploading}>
           <Upload className="size-4" aria-hidden />
-          {value ? 'Replace file' : kinds.includes('image') ? 'Upload PDF or image' : 'Upload PDF'}
+          {value ? 'Replace file' : kinds.includes('pptx') ? 'Upload .pptx' : kinds.includes('image') ? 'Upload PDF or image' : 'Upload PDF'}
         </PickButton>
         {value && (
           <button type="button" onClick={() => onChange(null)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-fg-muted hover:text-red-600">

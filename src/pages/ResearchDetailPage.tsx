@@ -1,11 +1,11 @@
 import { ExternalLink, Target } from 'lucide-react';
 import { useLoaderData } from 'react-router-dom';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
-import { isActiveResearch, researchStatusLabel } from '@/lib/labels';
+import { researchStatusLabel } from '@/lib/labels';
 import { formatMonth } from '@/lib/utils';
 import { ResearchPipeline } from '@/components/sections/ResearchPipeline';
 import { BackLink, MetaList } from '@/components/ui/BackLink';
-import { StatusPill, TechTag } from '@/components/ui/Badge';
+import { StatusBadge, TechTag } from '@/components/ui/Badge';
 import { Container } from '@/components/ui/Container';
 import { Media } from '@/components/ui/CoverArt';
 import { Reveal } from '@/components/ui/Reveal';
@@ -16,7 +16,7 @@ export default function ResearchDetailPage() {
   useDocumentMeta({ title: r.title, description: r.summary, type: 'article', image: r.cover?.src });
 
   const meta = [
-    { label: 'Status', value: researchStatusLabel[r.status] },
+    r.status ? { label: 'Status', value: researchStatusLabel[r.status] } : null,
     { label: 'Institution', value: r.institution },
     r.startDate ? { label: 'Started', value: formatMonth(r.startDate) } : null,
     r.supervisor ? { label: 'Supervisor', value: r.supervisor } : null,
@@ -29,7 +29,7 @@ export default function ResearchDetailPage() {
         <Container className="relative pt-10 pb-14 sm:pt-14">
           <BackLink to="/research" label="Undergraduate research" />
           <Reveal className="mt-10 max-w-4xl">
-            <StatusPill label={researchStatusLabel[r.status]} active={isActiveResearch(r.status)} />
+            <StatusBadge status={r.status} />
             <h1 className="mt-6 text-5xl font-semibold tracking-tighter sm:text-6xl">{r.title}</h1>
             <p className="mt-5 max-w-3xl font-display text-xl leading-snug text-fg-muted sm:text-2xl">{r.summary}</p>
           </Reveal>
@@ -37,11 +37,13 @@ export default function ResearchDetailPage() {
       </header>
 
       <Container className="py-14 sm:py-20">
-        <Reveal className="aspect-[21/9] overflow-hidden rounded-3xl border border-line">
-          <Media image={r.cover} artwork={r.artwork} seed={r.slug} label={r.title} priority />
-        </Reveal>
+        {r.cover && (
+          <Reveal className="mb-14 aspect-[21/9] overflow-hidden rounded-3xl border border-line">
+            <Media image={r.cover} artwork={r.artwork} seed={r.slug} label={r.title} priority />
+          </Reveal>
+        )}
 
-        <div className="mt-14 grid gap-14 lg:grid-cols-[1fr_20rem] lg:gap-16">
+        <div className="grid gap-14 lg:grid-cols-[1fr_20rem] lg:gap-16">
           <div className="min-w-0 space-y-14">
             <section aria-labelledby="overview">
               <h2 id="overview" className="text-2xl font-semibold">Overview</h2>

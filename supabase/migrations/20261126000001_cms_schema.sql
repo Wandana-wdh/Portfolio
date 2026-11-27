@@ -452,9 +452,11 @@ revoke execute on function public.referenced_files(jsonb) from authenticated;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('drafts', 'drafts', false, 10485760,
-   array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf']),
+   array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf',
+         'application/vnd.openxmlformats-officedocument.presentationml.presentation']),
   ('site', 'site', true, 10485760,
-   array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf'])
+   array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf',
+         'application/vnd.openxmlformats-officedocument.presentationml.presentation'])
 on conflict (id) do update
   set public = excluded.public,
       file_size_limit = excluded.file_size_limit,

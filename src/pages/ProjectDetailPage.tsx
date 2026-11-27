@@ -1,20 +1,26 @@
-import { ArrowRight, CheckCircle2, ExternalLink, FileText, UserRound, Users } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Download, ExternalLink, FileText, UserRound, Users } from 'lucide-react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
-import { credentialTypeLabel } from '@/lib/labels';
+import { credentialTypeLabel, workStatusLabel } from '@/lib/labels';
 import { formatMonth } from '@/lib/utils';
 import { cardGrid } from '@/lib/layout';
 import { credentialIcon } from '@/lib/credentialIcons';
 import { ProjectCard } from '@/components/cards/ProjectCard';
 import { ProjectGallery } from '@/components/sections/ProjectGallery';
 import { BackLink, MetaList } from '@/components/ui/BackLink';
-import { Badge, TechTag } from '@/components/ui/Badge';
+import { Badge, StatusBadge, TechTag } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Media } from '@/components/ui/CoverArt';
 import { Reveal } from '@/components/ui/Reveal';
 import { GitHubIcon } from '@/components/ui/SocialIcon';
 import type { LoaderData, projectDetailLoader } from './loaders';
+
+/** Supabase Storage sends the file as a download (not a page) when the URL has a "download" parameter. */
+function downloadUrl(href: string): string {
+  if (!href.includes('/storage/v1/object/')) return href;
+  return `${href}${href.includes('?') ? '&' : '?'}download=`;
+}
 
 export default function ProjectDetailPage() {
   const { project: p, credentials, others } = useLoaderData() as LoaderData<typeof projectDetailLoader>;
@@ -23,6 +29,7 @@ export default function ProjectDetailPage() {
   const overview = p.description.length > 0 ? p.description : [p.summary];
   const meta = [
     { label: 'Category', value: p.category },
+    p.status ? { label: 'Status', value: workStatusLabel[p.status] } : null,
     p.team ? { label: 'Type', value: 'Team project' } : null,
     p.role ? { label: 'Role', value: p.role } : null,
     p.year ? { label: 'Year', value: p.year } : null,
@@ -42,10 +49,11 @@ export default function ProjectDetailPage() {
                   Team project
                 </Badge>
               )}
+              <StatusBadge status={p.status} />
             </div>
             <h1 className="mt-5 text-4xl font-semibold sm:text-5xl">{p.title}</h1>
             <p className="mt-5 text-lg leading-relaxed text-fg-muted">{p.summary}</p>
-            {(p.repositories.length > 0 || p.liveUrl) && (
+            {(p.repositories.length > 0 || p.liveUrl || p.presentation?.href) && (
               <div className="mt-8 flex flex-wrap gap-3">
                 {p.repositories.map((repo) => (
                   <Button key={repo.url} href={repo.url} variant="secondary" leadingIcon={<GitHubIcon className="size-4" />}>
@@ -56,6 +64,13 @@ export default function ProjectDetailPage() {
                 {p.liveUrl && (
                   <Button href={p.liveUrl} trailingIcon={<ExternalLink className="size-4" aria-hidden />}>
                     Live demo
+                  </Button>
+                )}
+                {/* Only when a presentation is available in this view (published, or a draft in preview). */}
+                {p.presentation?.href && (
+                  <Button href={downloadUrl(p.presentation.href)} download variant="secondary" leadingIcon={<Download className="size-4" aria-hidden />}>
+                    {p.presentation.label || 'Download Project Presentation'}
+                    <span className="sr-only"> (PowerPoint file)</span>
                   </Button>
                 )}
               </div>

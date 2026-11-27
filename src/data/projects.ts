@@ -13,6 +13,7 @@ export const projects: Project[] = [
     id: 'cems',
     visible: true,
     featured: true,
+    status: 'completed',
     slug: 'civil-engineering-management-system',
     title: 'Civil Engineering Management System (CEMS)',
     shortTitle: 'CEMS',

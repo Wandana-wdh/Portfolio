@@ -1,11 +1,12 @@
 import type { ArtworkVariant, Project, ProjectCategory } from '@/types';
 import { CredentialPicker } from '../components/CredentialPicker';
-import { GalleryField, ImageField } from '../components/FileFields';
+import { DocumentField, GalleryField, ImageField } from '../components/FileFields';
 import { RepeatList } from '../components/RepeatList';
 import { CheckboxField, FormSection, SelectField, StringListField, TextAreaField, TextField } from '../components/fields';
 import { cleanList, orNull } from '../lib/listUtils';
 import type { EntryData } from '../lib/collections';
 import { SLUG_PATTERN, slugify, validator } from '../lib/validation';
+import { statusHint, workStatusOptions } from '../lib/statusOptions';
 import type { FormDefinition, FormProps } from './types';
 
 type P = EntryData<Project>;
@@ -49,6 +50,7 @@ function Form({ data, update, errors, folder, onUploaded, credentials, isNew }: 
             hint={isNew ? `/projects/${data.slug || '…'}` : `/projects/${data.slug} — changing it breaks existing links to this page.`}
           />
         </div>
+        <SelectField label="Status" value={data.status ?? ''} onChange={(status) => update({ status: status || null })} options={workStatusOptions} hint={statusHint} />
         <div className="grid gap-5 sm:grid-cols-3">
           <SelectField label="Category" value={data.category} onChange={(category) => update({ category })} options={categoryOptions} />
           <TextField label="My role (optional)" value={data.role} onChange={(role) => update({ role })} placeholder="e.g. Team member" />
@@ -114,6 +116,22 @@ function Form({ data, update, errors, folder, onUploaded, credentials, isNew }: 
         <TextField label="Live demo URL (optional)" type="url" value={data.liveUrl} onChange={(liveUrl) => update({ liveUrl })} error={errors.liveUrl} />
       </FormSection>
 
+      <FormSection
+        title="Presentation (optional)"
+        description="A PowerPoint (.pptx) file, up to 10 MB. A download button appears on the project page (not on the card) once you publish. It stays private until then, and your current file stays in place if a replacement upload fails."
+      >
+        <DocumentField
+          label="Project presentation"
+          value={data.presentation ?? null}
+          onChange={(presentation) => update({ presentation })}
+          folder={folder}
+          onUploaded={onUploaded}
+          kinds={['pptx']}
+          defaultLabel="Download Project Presentation"
+          labelError={errors['presentation.label']}
+        />
+      </FormSection>
+
       <FormSection title="Certificates" description="For example the CEMS confirmation letter. The same certificate can also appear on Achievements and elsewhere.">
         <CredentialPicker label="Attached certificates" value={data.credentialIds} onChange={(credentialIds) => update({ credentialIds })} credentials={credentials} create={{ type: 'certificate', inAchievements: true }} />
       </FormSection>
@@ -137,11 +155,14 @@ export const projectForm: FormDefinition<P> = {
       v.check(/^https?:\/\/\S+\.\S+/.test(r.url.trim()), `repositories.${i}.url`, 'Enter the full repository URL (https://…).');
     });
     v.url(d.liveUrl, 'liveUrl');
+    v.check(!d.presentation || Boolean(d.presentation.label.trim()), 'presentation.label', 'Add the button text, e.g. “Download Project Presentation”.');
     return v.errors;
   },
   prepare: (d) => ({
     ...d,
     featured: d.featured === true,
+    status: d.status || null,
+    presentation: d.presentation ? { ...d.presentation, label: d.presentation.label.trim() } : null,
     title: d.title.trim(),
     shortTitle: d.shortTitle?.trim() || undefined,
     summary: d.summary.trim(),

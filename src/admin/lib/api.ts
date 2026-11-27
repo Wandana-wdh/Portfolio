@@ -122,16 +122,32 @@ export async function deleteEntry(collection: Collection, id: string, files: str
 
 // ---------------------------------------------------------------- files
 
+export const PPTX_TYPE = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
 export const ACCEPT = {
   image: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'],
   pdf: ['application/pdf'],
+  pptx: [PPTX_TYPE],
 } as const;
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+const kindNames = { image: 'JPG, PNG, WebP, GIF or AVIF images', pdf: 'PDF files', pptx: 'PowerPoint (.pptx) files' } as const;
+
+/**
+ * Some systems report no type (or a generic one) for .pptx files, so a .pptx
+ * name with an empty/generic type is accepted and uploaded as PowerPoint.
+ */
+const isPptxFile = (file: File) =>
+  /\.pptx$/i.test(file.name) && ([PPTX_TYPE, '', 'application/octet-stream', 'application/zip'] as string[]).includes(file.type);
+
+/** The Content-Type to store the file with. */
+export const uploadType = (file: File) => (isPptxFile(file) ? PPTX_TYPE : file.type);
+
 export function validateFile(file: File, kinds: Array<keyof typeof ACCEPT>): string | null {
   const allowed: readonly string[] = kinds.flatMap((k) => ACCEPT[k]);
-  if (!allowed.includes(file.type)) {
-    const names = kinds.map((k) => (k === 'image' ? 'JPG, PNG, WebP, GIF or AVIF images' : 'PDF files')).join(' or ');
+  const ok = allowed.includes(file.type) || (kinds.includes('pptx') && isPptxFile(file));
+  if (!ok) {
+    const names = kinds.map((k) => kindNames[k]).join(' or ');
     return `“${file.name}” can’t be used — only ${names} are accepted.`;
   }
   if (file.size > MAX_UPLOAD_BYTES) {
@@ -139,6 +155,14 @@ export function validateFile(file: File, kinds: Array<keyof typeof ACCEPT>): str
   }
   if (file.size === 0) return `“${file.name}” is empty.`;
   return null;
+}
+
+/** A .pptx file is a ZIP package: it must start with "PK\x03\x04". */
+export async function checkFileContents(file: File): Promise<string | null> {
+  if (uploadType(file) !== PPTX_TYPE) return null;
+  const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  const zip = head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04;
+  return zip ? null : `“${file.name}” isn’t a valid PowerPoint (.pptx) file. Save it as .pptx and try again.`;
 }
 
 const safeName = (name: string) =>
@@ -171,7 +195,7 @@ export async function uploadDraftFile(
     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.setRequestHeader('apikey', supabaseConfig.key);
     xhr.setRequestHeader('x-upsert', 'false');
-    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.setRequestHeader('Content-Type', uploadType(file));
     xhr.setRequestHeader('cache-control', 'max-age=3600');
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
     xhr.onload = () => {

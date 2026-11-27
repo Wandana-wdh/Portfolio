@@ -43,6 +43,9 @@ export interface Attachment {
   href: string;
 }
 
+/** Progress of a project or an education entry. Unset (null) hides the badge. */
+export type WorkStatus = 'completed' | 'in-progress';
+
 /** Generated cover-art style used when no real image has been provided. */
 export type ArtworkVariant = 'network' | 'circuit' | 'lattice' | 'blocks' | 'waves' | 'grid' | 'pulse';
 
@@ -101,6 +104,8 @@ export interface Project extends Listable {
   slug: string;
   /** Show in Featured Projects on the homepage (in list order). */
   featured?: boolean;
+  /** Completed / In Progress badge; null hides it. */
+  status?: WorkStatus | null;
   title: string;
   /** Optional short name used in compact links, e.g. "CEMS". */
   shortTitle?: string;
@@ -125,6 +130,8 @@ export interface Project extends Listable {
   liveUrl: string | null;
   /** Ids of related records in credentials.ts (e.g. a confirmation letter). */
   credentialIds: string[];
+  /** Optional PowerPoint (.pptx) download shown on the project page. */
+  presentation?: Attachment | null;
 }
 
 // ---------------------------------------------------------------- Credentials
@@ -184,6 +191,8 @@ export interface TimelineEntry extends Listable {
   highlights: string[];
   /** Ids of credentials (certificates or results documents) attached to this entry. */
   credentialIds: string[];
+  /** Completed / In Progress badge; null hides it. */
+  status?: WorkStatus | null;
 }
 
 export type ExperienceType = 'volunteering' | 'ambassador' | 'student-role' | 'internship' | 'work';
@@ -263,7 +272,8 @@ export interface ResearchProject extends Listable {
   title: string;
   summary: string;
   description: string[];
-  status: ResearchStatus;
+  /** Status badge; null hides it. */
+  status: ResearchStatus | null;
   startDate: string | null;
   institution: string;
   supervisor: string | null;
@@ -272,6 +282,7 @@ export interface ResearchProject extends Listable {
   questions: string[];
   methodology: string[];
   links: LinkItem[];
+  /** Optional cover photo (Research page and the research page). Without one, the text uses the full width. */
   cover: ImageAsset | null;
   artwork: ArtworkVariant;
 }

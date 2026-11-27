@@ -1,5 +1,5 @@
-import type { Article, ArticleCategory, ResearchProject, ResearchStatus, SkillGroup, SkillIcon } from '@/types';
-import { researchStatusLabel } from '@/lib/labels';
+import type { Article, ArticleCategory, ResearchProject, SkillGroup, SkillIcon } from '@/types';
+import { researchStatusOptions, statusHint } from '../lib/statusOptions';
 import { ImageField } from '../components/FileFields';
 import { CheckboxField, FormSection, SelectField, StringListField, TextAreaField, TextField } from '../components/fields';
 import { cleanList, orNull } from '../lib/listUtils';
@@ -79,20 +79,24 @@ export const articleForm: FormDefinition<A> = {
 
 type R = EntryData<ResearchProject>;
 
-const statusOptions = (Object.keys(researchStatusLabel) as ResearchStatus[]).map((value) => ({ value, label: researchStatusLabel[value] }));
-
-function ResearchFormFields({ data, update, errors, isNew }: FormProps<R>) {
+function ResearchFormFields({ data, update, errors, isNew, folder, onUploaded }: FormProps<R>) {
   return (
     <>
       <FormSection title="Research">
         <div className="grid gap-5 sm:grid-cols-[1fr_14rem]">
           <TextField label="Title" required value={data.title} onChange={(t) => update(titlePatch(data, t, isNew))} error={errors.title} />
-          <SelectField label="Status" value={data.status} onChange={(status) => update({ status })} options={statusOptions} />
+          <SelectField label="Status" value={data.status ?? ''} onChange={(status) => update({ status: status || null })} options={researchStatusOptions} hint={statusHint} />
         </div>
         <TextAreaField label="Short description" required rows={3} value={data.summary} onChange={(summary) => update({ summary })} error={errors.summary} hint="Shown on the Research page and at the top of the research page." />
         <StringListField label="Description paragraphs" multiline values={data.description} onChange={(description) => update({ description })} itemLabel="paragraph" addLabel="Add paragraph" />
         <StringListField label="Questions I’m exploring" values={data.questions} onChange={(questions) => update({ questions })} itemLabel="question" addLabel="Add question" />
         <StringListField label="Methodology (optional)" values={data.methodology} onChange={(methodology) => update({ methodology })} itemLabel="step" addLabel="Add step" />
+      </FormSection>
+      <FormSection
+        title="Cover photo (optional)"
+        description="Shown beside the entry on the Research page and at the top of its page. Without a cover, the text uses the full width. It stays private until you publish."
+      >
+        <ImageField label="Cover photo" value={data.cover} onChange={(cover) => update({ cover })} folder={folder} onUploaded={onUploaded} altError={errors['cover.alt']} allowUrl={false} />
       </FormSection>
       <FormSection title="Details">
         <div className="grid gap-5 sm:grid-cols-2">
@@ -117,10 +121,13 @@ export const researchForm: FormDefinition<R> = {
     v.check(SLUG_PATTERN.test(d.slug), 'slug', 'Use lowercase letters, numbers and single hyphens.');
     v.check(!takenSlugs.includes(d.slug), 'slug', 'Another research entry already uses this URL.');
     v.date(d.startDate, 'startDate');
+    v.check(!d.cover || Boolean(d.cover.alt.trim()), 'cover.alt', 'Describe the cover photo.');
     return v.errors;
   },
   prepare: (d) => ({
     ...d,
+    status: d.status || null,
+    cover: d.cover ? { ...d.cover, alt: d.cover.alt.trim() } : null,
     title: d.title.trim(),
     summary: d.summary.trim(),
     description: cleanList(d.description),
